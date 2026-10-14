@@ -2,51 +2,32 @@
 
 namespace App\Console\Commands;
 
-use App\Services\Telegram\TelegramBot;
+use App\Actions\ConnectTelegramWebhook;
+use App\Support\TelegramSettings;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use RuntimeException;
 
 #[Signature('telegram:setup')]
-#[Description('Register the bot webhook, the menu button that opens the Mini App, and the /start command')]
+#[Description('Register the bot webhook, the menu button that opens the Mini App, and the /start command (same as "Connect webhook" in Admin → Telegram)')]
 class TelegramSetup extends Command
 {
-    public function handle(TelegramBot $bot): int
+    public function handle(ConnectTelegramWebhook $connect, TelegramSettings $settings): int
     {
-        if (! $bot->isConfigured() || blank(config('services.telegram.webhook_secret'))) {
-            $this->error('Set TELEGRAM_BOT_TOKEN and TELEGRAM_WEBHOOK_SECRET in .env first.');
+        try {
+            $connect->handle();
+        } catch (RuntimeException $exception) {
+            $this->error($exception->getMessage());
 
             return self::FAILURE;
         }
 
-        $webhookUrl = route('telegram.webhook');
-        $webAppUrl = route('webapp');
+        $this->info('Webhook: '.ConnectTelegramWebhook::webhookUrl());
+        $this->info('Mini App: '.route('webapp'));
 
-        if (! str_starts_with($webhookUrl, 'https://')) {
-            $this->error("Telegram requires HTTPS. APP_URL resolves to {$webhookUrl} — use your public HTTPS domain (or an ngrok tunnel in development).");
-
-            return self::FAILURE;
-        }
-
-        $bot->call('setWebhook', [
-            'url' => $webhookUrl,
-            'secret_token' => config('services.telegram.webhook_secret'),
-            'allowed_updates' => ['message', 'callback_query'],
-        ]);
-
-        $bot->call('setChatMenuButton', [
-            'menu_button' => ['type' => 'web_app', 'text' => 'Catalog', 'web_app' => ['url' => $webAppUrl]],
-        ]);
-
-        $bot->call('setMyCommands', [
-            'commands' => [['command' => 'start', 'description' => 'Open the SAXIY catalog']],
-        ]);
-
-        $this->info("Webhook: {$webhookUrl}");
-        $this->info("Mini App: {$webAppUrl}");
-
-        if (blank(config('services.telegram.admin_chat_id'))) {
-            $this->warn('TELEGRAM_ADMIN_CHAT_ID is empty — registrations and orders will not be posted to Telegram.');
+        if ($settings->adminChatId() === null) {
+            $this->warn('No admin chat is linked — registrations and orders will not be posted to Telegram. Link one in Admin → Telegram.');
         }
 
         return self::SUCCESS;

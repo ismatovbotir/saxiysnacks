@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Services\Telegram\InitDataValidator;
 use App\Services\Telegram\TelegramBot;
 use App\Support\SiteSettings;
+use App\Support\TelegramSettings;
 use App\View\Composers\StorefrontComposer;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
@@ -20,16 +21,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(TelegramBot::class, fn (): TelegramBot => new TelegramBot(
-            config('services.telegram.bot_token'),
+        $this->app->scoped(TelegramSettings::class);
+        $this->app->scoped(TelegramBot::class, fn (): TelegramBot => new TelegramBot(
+            $this->app->make(TelegramSettings::class)->botToken(),
         ));
 
         $this->app->scoped(SiteSettings::class);
         $this->app->scoped(StorefrontComposer::class);
 
-        $this->app->singleton(InitDataValidator::class, fn (): InitDataValidator => new InitDataValidator(
-            config('services.telegram.bot_token'),
-            config('services.telegram.init_data_ttl'),
+        $this->app->scoped(InitDataValidator::class, fn (): InitDataValidator => new InitDataValidator(
+            $this->app->make(TelegramSettings::class)->botToken(),
+            $this->app->make(TelegramSettings::class)->initDataTtl(),
         ));
     }
 

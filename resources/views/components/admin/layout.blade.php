@@ -25,6 +25,8 @@
                         'admin.products.index' => 'Products',
                         'admin.categories.index' => 'Categories',
                         'admin.settings.edit' => 'Contacts & social',
+                        'admin.telegram.edit' => 'Telegram',
+                        'admin.users.index' => 'Admins',
                     ] as $routeName => $label)
                         <a href="{{ route($routeName) }}"
                            @class([

@@ -6,6 +6,7 @@ use App\Jobs\Concerns\SyncsAdminChatMessage;
 use App\Models\Order;
 use App\Services\Telegram\AdminChatMessages;
 use App\Services\Telegram\TelegramBot;
+use App\Support\TelegramSettings;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
@@ -25,10 +26,11 @@ class SyncOrderAdminMessage implements ShouldQueue
 
     public function __construct(public Order $order) {}
 
-    public function handle(TelegramBot $bot, AdminChatMessages $messages): void
+    public function handle(TelegramBot $bot, TelegramSettings $settings, AdminChatMessages $messages): void
     {
         $messageId = $this->syncAdminMessage(
             $bot,
+            $settings,
             $this->order,
             $messages->orderText($this->order),
             $messages->orderKeyboard($this->order),
@@ -36,7 +38,7 @@ class SyncOrderAdminMessage implements ShouldQueue
 
         if ($messageId !== null) {
             $bot->sendLocation(
-                config('services.telegram.admin_chat_id'),
+                $settings->adminChatId(),
                 $this->order->delivery_latitude,
                 $this->order->delivery_longitude,
                 $messageId,

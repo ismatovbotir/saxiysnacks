@@ -16,6 +16,7 @@ use App\Services\Telegram\AdminChatMessages;
 use App\Services\Telegram\ClientMessages;
 use App\Services\Telegram\TelegramBot;
 use App\Support\BotLocale;
+use App\Support\TelegramSettings;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -28,11 +29,12 @@ class WebhookController extends Controller
         private ChangeClientType $changeClientType,
         private ChangeClientStatus $changeClientStatus,
         private ChangeOrderStatus $changeOrderStatusAction,
+        private TelegramSettings $settings,
     ) {}
 
     public function __invoke(Request $request): Response
     {
-        $secret = (string) config('services.telegram.webhook_secret');
+        $secret = (string) $this->settings->webhookSecret();
 
         abort_if($secret === '' || ! hash_equals($secret, (string) $request->header('X-Telegram-Bot-Api-Secret-Token')), 403);
 
@@ -50,6 +52,12 @@ class WebhookController extends Controller
      */
     private function handleMessage(array $message): void
     {
+        if (preg_match('/^\/link(?:@\w+)?\s+(\S+)/', (string) ($message['text'] ?? ''), $matches)) {
+            $this->linkAdminChat($message, $matches[1]);
+
+            return;
+        }
+
         if (($message['chat']['type'] ?? null) !== 'private') {
             return;
         }
@@ -72,6 +80,24 @@ class WebhookController extends Controller
             $this->clientMessages->welcome($client, $client?->language_code ?? $locale),
             $this->clientMessages->catalogKeyboard($client?->language_code ?? $locale),
         );
+    }
+
+    /**
+     * "/link CODE" with the code shown in Admin → Telegram makes this chat the admin chat.
+     *
+     * @param  array<string, mixed>  $message
+     */
+    private function linkAdminChat(array $message, string $code): void
+    {
+        if (! $this->settings->consumeAdminChatLinkCode($code)) {
+            $this->bot->sendMessage($message['chat']['id'], '⚠️ This code is not valid any more. Open Admin → Telegram for a new one.');
+
+            return;
+        }
+
+        $this->settings->linkAdminChat((string) $message['chat']['id']);
+
+        $this->bot->sendMessage($message['chat']['id'], '✅ This chat now receives new SAXIY customers and orders.');
     }
 
     /**
@@ -109,7 +135,7 @@ class WebhookController extends Controller
      */
     private function handleCallbackQuery(array $callback): void
     {
-        if ((string) ($callback['message']['chat']['id'] ?? '') !== (string) config('services.telegram.admin_chat_id')) {
+        if ((string) ($callback['message']['chat']['id'] ?? '') !== (string) $this->settings->adminChatId()) {
             $this->bot->answerCallbackQuery($callback['id'], 'Not allowed.', true);
 
             return;

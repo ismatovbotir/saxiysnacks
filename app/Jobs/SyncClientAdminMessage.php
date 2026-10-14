@@ -6,6 +6,7 @@ use App\Jobs\Concerns\SyncsAdminChatMessage;
 use App\Models\TelegramClient;
 use App\Services\Telegram\AdminChatMessages;
 use App\Services\Telegram\TelegramBot;
+use App\Support\TelegramSettings;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
@@ -25,10 +26,11 @@ class SyncClientAdminMessage implements ShouldQueue
 
     public function __construct(public TelegramClient $client) {}
 
-    public function handle(TelegramBot $bot, AdminChatMessages $messages): void
+    public function handle(TelegramBot $bot, TelegramSettings $settings, AdminChatMessages $messages): void
     {
         $this->syncAdminMessage(
             $bot,
+            $settings,
             $this->client,
             $messages->clientText($this->client),
             $messages->clientKeyboard($this->client),

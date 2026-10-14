@@ -3,6 +3,7 @@
 namespace App\Jobs\Concerns;
 
 use App\Services\Telegram\TelegramBot;
+use App\Support\TelegramSettings;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Client\RequestException;
 
@@ -14,9 +15,9 @@ trait SyncsAdminChatMessage
      *
      * @param  array<string, mixed>  $replyMarkup
      */
-    protected function syncAdminMessage(TelegramBot $bot, Model $model, string $text, array $replyMarkup): ?int
+    protected function syncAdminMessage(TelegramBot $bot, TelegramSettings $settings, Model $model, string $text, array $replyMarkup): ?int
     {
-        $chatId = config('services.telegram.admin_chat_id');
+        $chatId = $settings->adminChatId();
 
         if (! $bot->isConfigured() || blank($chatId)) {
             return null;

@@ -61,6 +61,8 @@ class SiteSettings
      */
     private ?array $resolved = null;
 
+    public function __construct(private TelegramSettings $telegram) {}
+
     /**
      * @return array<string, mixed>
      */
@@ -68,7 +70,7 @@ class SiteSettings
     {
         return $this->resolved ??= array_replace(
             self::DEFAULTS,
-            Cache::rememberForever(self::CACHE_KEY, fn (): array => Setting::query()->pluck('value', 'key')->all()),
+            Cache::rememberForever(self::CACHE_KEY, fn (): array => Setting::query()->whereIn('key', array_keys(self::DEFAULTS))->pluck('value', 'key')->all()),
         );
     }
 
@@ -105,9 +107,9 @@ class SiteSettings
 
     public function telegramBotUrl(): ?string
     {
-        $username = ltrim((string) config('services.telegram.bot_username'), '@');
+        $username = $this->telegram->botUsername();
 
-        return $username !== '' ? "https://t.me/{$username}" : null;
+        return $username ? "https://t.me/{$username}" : null;
     }
 
     public function ogImageUrl(): ?string

@@ -7,6 +7,8 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\TelegramController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Storefront\CatalogController;
 use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\ProductPageController;
@@ -44,6 +46,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::get('settings', [SettingsController::class, 'edit'])->name('settings.edit');
         Route::put('settings', [SettingsController::class, 'update'])->name('settings.update');
+
+        Route::get('telegram', [TelegramController::class, 'edit'])->name('telegram.edit');
+        Route::put('telegram/bot', [TelegramController::class, 'updateBot'])->name('telegram.bot');
+        Route::post('telegram/webhook', [TelegramController::class, 'connectWebhook'])->name('telegram.webhook');
+        Route::put('telegram/admin-chat', [TelegramController::class, 'updateAdminChat'])->name('telegram.admin-chat');
+        Route::post('telegram/test', [TelegramController::class, 'testAdminChat'])->name('telegram.test');
+
+        Route::resource('users', UserController::class)->except('show');
     });
 });
 
