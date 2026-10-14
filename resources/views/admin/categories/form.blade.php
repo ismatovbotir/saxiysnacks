@@ -4,7 +4,7 @@
         @if ($category->exists)
             <form method="POST" action="{{ route('admin.categories.destroy', $category) }}" onsubmit="return confirm(@js(__('Delete this category?')))">
                 @csrf @method('DELETE')
-                <button class="admin-btn-outline text-red-700">{{ __('Delete') }}</button>
+                <button class="admin-btn-danger">{{ __('Delete') }}</button>
             </form>
         @endif
     </x-admin.page-header>

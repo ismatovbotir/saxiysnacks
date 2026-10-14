@@ -21,6 +21,7 @@ class WebAppOrderResource extends JsonResource
             'number' => $this->number(),
             'status' => $this->status->value,
             'price_type' => $this->price_type->value,
+            'unit' => $this->unit()->value,
             'total' => $this->total,
             'comment' => $this->comment,
             'delivery' => [

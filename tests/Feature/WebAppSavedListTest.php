@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Actions\ChangeClientType;
+use App\Enums\ClientType;
 use App\Models\Product;
 use App\Models\TelegramClient;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -82,5 +84,18 @@ class WebAppSavedListTest extends TestCase
             ->assertJsonValidationErrors(['items.0.product_id', 'items.1.quantity']);
 
         $this->assertDatabaseEmpty('saved_products');
+    }
+
+    public function test_saved_quantities_switch_between_pieces_and_packages_with_the_customer_type(): void
+    {
+        $client = TelegramClient::factory()->create();
+        $product = Product::factory()->create(['box_quantity' => 40]);
+        $client->savedProducts()->attach($product, ['quantity' => 50]);
+
+        app(ChangeClientType::class)->handle($client, ClientType::Reseller);
+        $this->assertSame([$product->id => 2], $client->savedQuantities());
+
+        app(ChangeClientType::class)->handle($client->fresh(), ClientType::Consumer);
+        $this->assertSame([$product->id => 80], $client->savedQuantities());
     }
 }

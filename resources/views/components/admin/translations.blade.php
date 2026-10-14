@@ -1,7 +1,7 @@
 @props(['label', 'name', 'values' => [], 'textarea' => false, 'required' => ['uz', 'ru']])
 
 <fieldset class="space-y-3">
-    <legend class="mb-1 text-sm font-medium">{{ $label }}</legend>
+    <legend class="mb-1 text-[13px] font-semibold">{{ $label }}</legend>
     <div class="grid gap-3 md:grid-cols-3">
         @foreach (['uz' => "O'zbekcha", 'ru' => 'Русский', 'en' => 'English'] as $locale => $language)
             <x-admin.field :label="$language.(in_array($locale, $required) ? ' *' : '')" :name="$name.'.'.$locale">

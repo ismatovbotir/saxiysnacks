@@ -45,6 +45,7 @@ class AdminUsersTest extends TestCase
             'email' => ' Sales@Saxiy.uz ',
             'password' => 'new-admin-secret',
             'password_confirmation' => 'new-admin-secret',
+            'role' => 'sales_manager',
         ])->assertRedirect(route('admin.users.index'));
 
         $created = User::firstWhere('email', 'sales@saxiy.uz');
@@ -68,7 +69,7 @@ class AdminUsersTest extends TestCase
     {
         $other = User::factory()->create(['password' => 'old-password-1']);
 
-        $this->put(route('admin.users.update', $other), ['name' => 'Renamed', 'email' => $other->email, 'password' => ''])
+        $this->put(route('admin.users.update', $other), ['name' => 'Renamed', 'email' => $other->email, 'role' => 'owner', 'password' => ''])
             ->assertRedirect(route('admin.users.index'));
 
         $other->refresh();
@@ -80,6 +81,7 @@ class AdminUsersTest extends TestCase
             'email' => $other->email,
             'password' => 'brand-new-password',
             'password_confirmation' => 'brand-new-password',
+            'role' => 'owner',
         ]);
 
         $this->assertTrue(Hash::check('brand-new-password', $other->fresh()->password));

@@ -19,6 +19,8 @@ class PlaceOrder
     /**
      * Create an order priced from the current catalog at the client's price type; client-sent prices are never trusted.
      *
+     * Every line must respect the product's minimum order and step for the client's type.
+     *
      * Resellers always receive at their saved location. Anyone else must pass a delivery location,
      * which also becomes their saved location for next time.
      *
@@ -47,6 +49,22 @@ class PlaceOrder
         if ($products->count() !== $quantities->count()) {
             throw ValidationException::withMessages([
                 'items' => 'Some products are no longer available. Please refresh the catalog.',
+            ]);
+        }
+
+        $invalid = $quantities->reject(fn (int $quantity, int $productId): bool => $products[$productId]->allowsQuantity($client->type, $quantity));
+
+        if ($invalid->isNotEmpty()) {
+            $product = $products[$invalid->keys()->first()];
+
+            throw ValidationException::withMessages([
+                'items' => sprintf(
+                    '%s: order at least %d %s, in steps of %d.',
+                    $product->translate('name', $client->language_code),
+                    $product->minQuantityFor($client->type),
+                    $client->type->orderUnit()->chatLabel($product->minQuantityFor($client->type)),
+                    $product->quantityStepFor($client->type),
+                ),
             ]);
         }
 

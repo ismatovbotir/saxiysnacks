@@ -18,7 +18,7 @@ class AdminChatOrderMessageTest extends TestCase
     public function test_a_new_order_is_posted_to_the_admin_chat_with_full_details(): void
     {
         $this->configureTelegram();
-        Carbon::setTestNow('2026-10-14 10:42:00');
+        Carbon::setTestNow(Carbon::parse('2026-10-14 10:42:00', 'UTC'));
 
         $client = TelegramClient::factory()->reseller()->create([
             'telegram_id' => 1001,
@@ -62,9 +62,9 @@ class AdminChatOrderMessageTest extends TestCase
                 'Reseller prices · 🔁 1 earlier order',
                 'Warehouse 4',
                 '1. <b>Курт классический</b>, 30 g · <code>KRT-30</code>',
-                '3 boxes × 40 pcs = 120 pcs',
-                "100 000 so'm / box → <b>300 000 so'm</b>",
-                '<b>Boxes:</b> 3 · <b>Pieces:</b> 120 · <b>Weight:</b> ≈3.6 kg',
+                '3 packages × 40 pcs = 120 pcs',
+                "100 000 so'm / package → <b>300 000 so'm</b>",
+                '<b>Packages:</b> 3 · <b>Pieces:</b> 120 · <b>Weight:</b> ≈3.6 kg',
                 "Total: 300 000 so'm",
                 'Call before arriving',
             ] as $expected) {
@@ -95,6 +95,6 @@ class AdminChatOrderMessageTest extends TestCase
 
         $this->assertLessThanOrEqual(4096, mb_strlen(strip_tags($text)));
         $this->assertMatchesRegularExpression('/… and \d+ more — see the admin panel/', $text);
-        $this->assertStringContainsString('<b>Boxes:</b> 160', $text);
+        $this->assertStringContainsString('<b>Pieces:</b> 160', $text);
     }
 }

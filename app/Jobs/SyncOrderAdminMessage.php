@@ -36,7 +36,7 @@ class SyncOrderAdminMessage implements ShouldQueue
             $messages->orderKeyboard($this->order),
         );
 
-        if ($messageId !== null) {
+        if ($messageId !== null && $this->order->hasDeliveryLocation()) {
             $bot->sendLocation(
                 $settings->adminChatId(),
                 $this->order->delivery_latitude,

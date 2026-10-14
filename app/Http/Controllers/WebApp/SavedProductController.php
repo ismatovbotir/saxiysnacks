@@ -24,7 +24,7 @@ class SavedProductController extends Controller
         $validated = $request->validate([
             'items' => ['required', 'array', 'min:1', 'max:100'],
             'items.*.product_id' => ['required', 'integer', 'distinct', Rule::exists('products', 'id')->where('is_active', true)],
-            'items.*.quantity' => ['required', 'integer', 'min:1', 'max:999'],
+            'items.*.quantity' => ['required', 'integer', 'min:1', 'max:10000'],
         ]);
 
         $client->savedProducts()->syncWithoutDetaching(

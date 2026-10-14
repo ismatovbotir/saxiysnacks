@@ -128,6 +128,12 @@ return [
         'password' => env('ADMIN_PASSWORD'),
     ],
 
+    /*
+    | Skip the admin login while developing locally: every admin page signs in the default admin
+    | (or the first admin). Only honoured when APP_ENV=local — never on staging or production.
+    */
+    'dev_auto_login' => (bool) env('ADMIN_DEV_AUTO_LOGIN', false),
+
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
 ];

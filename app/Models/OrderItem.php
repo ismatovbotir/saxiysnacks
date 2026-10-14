@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\OrderUnit;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,6 +30,18 @@ class OrderItem extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    /**
+     * Pieces on this line: the quantity itself for piece orders, packages × pieces per package otherwise.
+     */
+    public function pieces(): ?int
+    {
+        return match (true) {
+            $this->order->unit() === OrderUnit::Piece => $this->quantity,
+            $this->box_quantity !== null => $this->quantity * $this->box_quantity,
+            default => null,
+        };
     }
 
     /**

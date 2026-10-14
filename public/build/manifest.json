@@ -32,7 +32,7 @@
     "name": "pack"
   },
   "resources/css/app.css": {
-    "file": "assets/app-BJM7d1Ej.css",
+    "file": "assets/app-C76ePLcx.css",
     "name": "app",
     "names": [
       "app.css"
@@ -41,7 +41,7 @@
     "isEntry": true
   },
   "resources/css/storefront.css": {
-    "file": "assets/storefront-BfJiUd2e.css",
+    "file": "assets/storefront-CMgpcz6G.css",
     "name": "storefront",
     "names": [
       "storefront.css"
@@ -65,7 +65,7 @@
     "isEntry": true
   },
   "resources/js/storefront.js": {
-    "file": "assets/storefront-C33DHlkS.js",
+    "file": "assets/storefront-0FQB4n6n.js",
     "name": "storefront",
     "src": "resources/js/storefront.js",
     "isEntry": true,
@@ -74,7 +74,7 @@
     ]
   },
   "resources/js/webapp.js": {
-    "file": "assets/webapp-BtNd-hPY.js",
+    "file": "assets/webapp-DQFy55YL.js",
     "name": "webapp",
     "src": "resources/js/webapp.js",
     "isEntry": true,

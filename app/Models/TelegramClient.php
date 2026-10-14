@@ -65,6 +65,14 @@ class TelegramClient extends Model
     }
 
     /**
+     * @return HasMany<Payment, $this>
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /**
      * The customer's "My list": products they order regularly, with their usual number of boxes.
      *
      * @return BelongsToMany<Product, $this>

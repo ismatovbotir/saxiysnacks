@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\ChangeOrderStatus;
 use App\Enums\OrderStatus;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\RedirectResponse;
@@ -30,14 +31,16 @@ class OrderController extends Controller
 
     public function show(Order $order): View
     {
-        return view('admin.orders.show', ['order' => $order->load(['client', 'items'])]);
+        return view('admin.orders.show', ['order' => $order->load(['client', 'items', 'payments.user'])]);
     }
 
     public function updateStatus(Request $request, Order $order, ChangeOrderStatus $changeStatus): RedirectResponse
     {
         $validated = $request->validate(['status' => ['required', Rule::enum(OrderStatus::class)]]);
 
-        $changeStatus->handle($order, OrderStatus::from($validated['status']));
+        $override = $request->boolean('override') && $request->user()->role === UserRole::Owner;
+
+        $changeStatus->handle($order, OrderStatus::from($validated['status']), $override);
 
         return back()->with('status', __('Order :number is now :status.', ['number' => $order->number(), 'status' => $order->status->label()]));
     }

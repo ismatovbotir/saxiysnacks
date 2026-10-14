@@ -108,6 +108,16 @@ class AdminLocaleTest extends TestCase
                 route('admin.telegram.edit'),
                 route('admin.users.index'),
                 route('admin.users.edit', $admin),
+                route('admin.users.create'),
+                route('admin.roles.index'),
+                route('admin.roles.show', 'warehouse'),
+                route('admin.roles.show', 'owner'),
+                route('admin.stock.index'),
+                route('admin.stock.movements'),
+                route('admin.finance.payments.index'),
+                route('admin.finance.debts'),
+                route('admin.finance.expenses.index'),
+                route('admin.finance.report'),
             ] as $url) {
                 $this->get($url)
                     ->assertOk()

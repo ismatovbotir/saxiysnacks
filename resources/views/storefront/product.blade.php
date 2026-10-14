@@ -59,7 +59,7 @@
         <div class="flex flex-wrap items-center gap-3">
           <div class="inline-flex items-center rounded-full border-[1.5px] border-line bg-surface">
             <button type="button" aria-label="−" data-q="-1" class="h-11 w-11 text-xl font-bold">−</button>
-            <span id="iqv" class="min-w-8 text-center font-bold">1</span>
+            <span id="iqv" class="min-w-8 text-center font-bold">{{ $product->minQuantityFor(\App\Enums\ClientType::Consumer) }}</span><span class="text-sm text-muted">{{ __('site.pcs') }}</span>
             <button type="button" aria-label="+" data-q="1" class="h-11 w-11 text-xl font-bold">+</button>
           </div>
           <button class="btn btn-leaf grow sm:grow-0" type="button" id="iadd" data-id="{{ $product->slug }}">{{ __('site.add') }}</button>

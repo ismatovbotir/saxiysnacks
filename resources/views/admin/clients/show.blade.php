@@ -7,7 +7,7 @@
     <div class="grid gap-4 lg:grid-cols-3 lg:gap-6">
         <aside class="space-y-4 lg:order-last lg:space-y-6">
             <section class="admin-card p-4 sm:p-5">
-                <h2 class="mb-3 font-semibold">{{ __('Actions') }}</h2>
+                <h2 class="mb-3 text-[11px] font-semibold tracking-wider text-black/50 uppercase">{{ __('Actions') }}</h2>
                 @include('admin.clients.partials.actions')
                 <div class="mt-3 grid grid-cols-2 gap-2">
                     <a href="tel:{{ $client->phone }}" class="admin-btn-outline"><x-admin.icon name="phone" class="size-4" /> {{ __('Call') }}</a>
@@ -18,7 +18,7 @@
             </section>
 
             <section class="admin-card p-4 sm:p-5">
-                <h2 class="mb-3 font-semibold">{{ __('Details') }}</h2>
+                <h2 class="mb-3 text-[11px] font-semibold tracking-wider text-black/50 uppercase">{{ __('Details') }}</h2>
                 <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm lg:grid-cols-1">
                     @foreach ([
                         __('Name') => $client->fullName(),
@@ -38,12 +38,12 @@
 
         <div class="space-y-4 lg:col-span-2 lg:space-y-6">
             <section class="admin-card p-4 sm:p-5">
-                <h2 class="mb-3 font-semibold">{{ __('Delivery location') }} <span class="text-sm font-normal text-black/50">{{ $client->location_updated_at ? '· '.__('updated :date', ['date' => $client->location_updated_at->format('d.m.Y')]) : '' }}</span></h2>
+                <h2 class="mb-3 text-[11px] font-semibold tracking-wider text-black/50 uppercase">{{ __('Delivery location') }} <span class="text-sm font-normal text-black/50">{{ $client->location_updated_at ? '· '.__('updated :date', ['date' => $client->location_updated_at->format('d.m.Y')]) : '' }}</span></h2>
                 <x-admin.location :latitude="$client->latitude" :longitude="$client->longitude" :address="$client->address" />
             </section>
 
             <section class="admin-card">
-                <h2 class="border-b border-black/10 px-4 py-3 font-semibold sm:px-5">{{ __('Orders') }}</h2>
+                <h2 class="admin-card-header admin-card-title">{{ __('Orders') }}</h2>
                 <ul class="divide-y divide-black/5">
                     @forelse ($orders as $order)
                         <li>

@@ -21,22 +21,23 @@
 
     <div class="space-y-2 md:hidden">
         @forelse ($products as $product)
-            <a href="{{ route('admin.products.edit', $product) }}" class="admin-card flex items-center gap-3 p-3 active:bg-black/2">
+            <a href="{{ route('admin.products.edit', $product) }}" class="admin-card flex items-center gap-3 p-3 active:bg-black/[0.03]">
                 @include('admin.products.partials.thumb')
                 <span class="min-w-0 flex-1">
                     <span class="block truncate font-semibold">{{ $product->translate('name', app()->getLocale()) }}</span>
                     <span class="block truncate text-xs text-black/50">{{ $product->category->translate('name', app()->getLocale()) }} · {{ $product->weight_grams }} {{ __('g') }}{{ $product->box_quantity ? ' · '.__(':count pcs', ['count' => $product->box_quantity]) : '' }}</span>
                     @if ($product->gtin || $product->class_code)<span class="block truncate font-mono text-[11px] text-black/50">{{ collect([$product->gtin ? 'GTIN '.$product->gtin : null, $product->class_code ? 'MXIK '.$product->class_code : null])->filter()->implode(' · ') }}</span>@endif
                     @if ($product->consumer_price)
-                        <span class="block text-sm font-semibold">{{ \App\Support\Money::format($product->consumer_price) }} <span class="font-normal text-black/50">· ⭐ {{ $product->reseller_price ? \App\Support\Money::format($product->reseller_price) : __('same') }}</span></span>
+                        <span class="block text-sm font-semibold">{{ \App\Support\Money::format($product->consumer_price) }} / {{ __('pcs') }} <span class="font-normal text-black/50">· ⭐ {{ $product->priceFor(\App\Enums\ClientType::Reseller) ? \App\Support\Money::format($product->priceFor(\App\Enums\ClientType::Reseller)).' / '.__('pkg') : __('not orderable') }}</span></span>
+                        @include('admin.products.partials.order-rules')
                     @else
                         <span class="block text-sm text-amber-700">{{ __('No price — not orderable') }}</span>
                     @endif
                 </span>
                 <span class="flex shrink-0 flex-col items-end gap-1 text-xs">
-                    @unless ($product->is_active)<span class="rounded-full bg-black/5 px-2 py-0.5">{{ __('Hidden') }}</span>@endunless
-                    @if ($product->is_featured)<span class="rounded-full bg-brand/15 px-2 py-0.5">{{ __('Hit') }}</span>@endif
-                    @if ($product->is_new)<span class="rounded-full bg-leaf/15 px-2 py-0.5">{{ __('New item') }}</span>@endif
+                    @unless ($product->is_active)<span class="admin-badge ring-black/5 bg-black/5">{{ __('Hidden') }}</span>@endunless
+                    @if ($product->is_featured)<span class="admin-badge ring-black/5 bg-brand/15">{{ __('Hit') }}</span>@endif
+                    @if ($product->is_new)<span class="admin-badge ring-black/5 bg-leaf/15">{{ __('New item') }}</span>@endif
                     <x-admin.icon name="chevron" class="size-4 text-black/30" />
                 </span>
             </a>
@@ -46,14 +47,14 @@
     </div>
 
     <div class="admin-card hidden overflow-x-auto md:block">
-        <table class="w-full text-left text-sm">
-            <thead class="border-b border-black/10">
-                <tr><th class="admin-th">{{ __('Product') }}</th><th class="admin-th">{{ __('Category') }}</th><th class="admin-th">{{ __('Weight / box') }}</th><th class="admin-th">{{ __('Codes') }}</th><th class="admin-th">{{ __('Consumer / reseller price') }}</th><th class="admin-th">{{ __('Status') }}</th><th></th></tr>
+        <table class="admin-table">
+            <thead>
+                <tr><th class="admin-th">{{ __('Product') }}</th><th class="admin-th">{{ __('Category') }}</th><th class="admin-th">{{ __('Weight / package') }}</th><th class="admin-th">{{ __('Codes') }}</th><th class="admin-th">{{ __('Consumer / reseller price') }}</th><th class="admin-th">{{ __('Status') }}</th><th></th></tr>
             </thead>
-            <tbody class="divide-y divide-black/5">
+            <tbody>
                 @forelse ($products as $product)
-                    <tr class="hover:bg-black/2">
-                        <td class="px-4 py-3">
+                    <tr>
+                        <td class="admin-td">
                             <div class="flex items-center gap-3">
                                 @include('admin.products.partials.thumb')
                                 <span>
@@ -62,31 +63,32 @@
                                 </span>
                             </div>
                         </td>
-                        <td class="px-4 py-3">{{ $product->category->translate('name', app()->getLocale()) }}</td>
-                        <td class="px-4 py-3 whitespace-nowrap">{{ $product->weight_grams }} {{ __('g') }}{{ $product->box_quantity ? ' · '.__(':count pcs', ['count' => $product->box_quantity]) : '' }}</td>
-                        <td class="px-4 py-3 font-mono text-xs whitespace-nowrap text-black/60">
+                        <td class="admin-td">{{ $product->category->translate('name', app()->getLocale()) }}</td>
+                        <td class="admin-td whitespace-nowrap">{{ $product->weight_grams }} {{ __('g') }}{{ $product->box_quantity ? ' · '.__(':count pcs', ['count' => $product->box_quantity]) : '' }}</td>
+                        <td class="admin-td font-mono text-xs whitespace-nowrap text-black/60">
                             @if ($product->gtin)<span class="block">GTIN {{ $product->gtin }}</span>@endif
                             @if ($product->class_code)<span class="block">MXIK {{ $product->class_code }}</span>@endif
                             @if (! $product->gtin && ! $product->class_code)—@endif
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap">
+                        <td class="admin-td whitespace-nowrap">
                             @if ($product->consumer_price)
-                                {{ \App\Support\Money::format($product->consumer_price) }}
-                                <span class="block text-xs text-black/50">⭐ {{ $product->reseller_price ? \App\Support\Money::format($product->reseller_price) : __('same as consumer') }}</span>
+                                {{ \App\Support\Money::format($product->consumer_price) }} / {{ __('pcs') }}
+                                <span class="block text-xs text-black/50">⭐ {{ $product->priceFor(\App\Enums\ClientType::Reseller) ? \App\Support\Money::format($product->priceFor(\App\Enums\ClientType::Reseller)).' / '.__('pkg') : __('not orderable') }}</span>
+                                @include('admin.products.partials.order-rules')
                             @else
                                 <span class="text-amber-700">{{ __('No price — not orderable') }}</span>
                             @endif
                         </td>
-                        <td class="px-4 py-3">
+                        <td class="admin-td">
                             {{ $product->is_active ? __('Visible') : __('Hidden') }}
-                            @if ($product->is_featured) <span class="ml-1 rounded bg-brand/15 px-1.5 text-xs">{{ __('Hit') }}</span> @endif
-                            @if ($product->is_new) <span class="ml-1 rounded bg-leaf/15 px-1.5 text-xs">{{ __('New item') }}</span> @endif
+                            @if ($product->is_featured) <span class="admin-badge ml-1 bg-brand/15 ring-brand/30">{{ __('Hit') }}</span> @endif
+                            @if ($product->is_new) <span class="admin-badge ml-1 bg-leaf/15 ring-leaf/30">{{ __('New item') }}</span> @endif
                         </td>
-                        <td class="px-4 py-3 text-right whitespace-nowrap">
-                            <a href="{{ route('admin.products.edit', $product) }}" class="admin-btn-outline px-3 py-1.5">{{ __('Edit') }}</a>
+                        <td class="admin-td text-right whitespace-nowrap">
+                            <a href="{{ route('admin.products.edit', $product) }}" class="admin-btn-outline h-8 px-2.5">{{ __('Edit') }}</a>
                             <form method="POST" action="{{ route('admin.products.destroy', $product) }}" class="inline" onsubmit="return confirm(@js(__('Delete this product?')))">
                                 @csrf @method('DELETE')
-                                <button class="admin-btn-outline px-3 py-1.5 text-red-700">{{ __('Delete') }}</button>
+                                <button class="admin-btn-danger h-8 px-2.5">{{ __('Delete') }}</button>
                             </form>
                         </td>
                     </tr>

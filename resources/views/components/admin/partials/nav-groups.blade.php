@@ -1,23 +1,16 @@
+{{-- Dashboard, then collapsible groups of the pages this role may open. The group with the open page stays expanded. --}}
+@include('components.admin.partials.nav-item', ['item' => $navigationHome])
+
 @foreach ($navigation as $group => $items)
-    <div>
-        <p class="mb-1.5 px-3 text-[11px] font-semibold tracking-widest text-white/40 uppercase">{{ $group }}</p>
+    <details class="group/nav" open data-nav-group="{{ $group }}">
+        <summary class="mb-1 flex cursor-pointer list-none items-center justify-between rounded px-2.5 py-1 text-[10px] font-semibold tracking-[0.14em] text-white/40 uppercase hover:text-white/70 [&::-webkit-details-marker]:hidden">
+            {{ $group }}
+            <x-admin.icon name="chevron" class="size-3 transition-transform group-open/nav:rotate-90" />
+        </summary>
         <ul class="space-y-0.5">
             @foreach ($items as $item)
-                <li>
-                    <a href="{{ $item['url'] }}" @if ($item['active']) aria-current="page" @endif
-                       @class([
-                           'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                           'bg-white/10 text-white' => $item['active'],
-                           'text-white/70 hover:bg-white/5 hover:text-white' => ! $item['active'],
-                       ])>
-                        <x-admin.icon :name="$item['icon']" :class="$item['active'] ? 'text-brand' : ''" />
-                        <span class="flex-1">{{ $item['label'] }}</span>
-                        @if ($item['badge'])
-                            <span class="rounded-full bg-brand px-2 py-0.5 text-xs font-bold text-ink" title="{{ __('Needs attention') }}">{{ $item['badge'] }}</span>
-                        @endif
-                    </a>
-                </li>
+                <li>@include('components.admin.partials.nav-item')</li>
             @endforeach
         </ul>
-    </div>
+    </details>
 @endforeach

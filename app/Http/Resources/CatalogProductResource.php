@@ -14,6 +14,7 @@ class CatalogProductResource extends JsonResource
 {
     /**
      * Prices are only exposed to registered, active clients — consumer or reseller price depending on their type.
+     * Consumers are priced per piece, resellers per package (with the consumer package price shown for comparison).
      *
      * @return array<string, mixed>
      */
@@ -37,8 +38,11 @@ class CatalogProductResource extends JsonResource
             'is_new' => $this->is_new,
             'is_featured' => $this->is_featured,
             'price' => $this->when($canSeePrices, fn (): ?int => $this->priceFor($client->type)),
-            'consumer_price' => $this->when($canSeePrices && $client->isReseller(), $this->consumer_price),
+            'unit' => $this->when($canSeePrices, fn (): string => $client->type->orderUnit()->value),
+            'consumer_price' => $this->when($canSeePrices && $client->isReseller(), fn (): ?int => $this->consumerPackagePrice()),
             'orderable' => $this->when($canSeePrices, fn (): bool => $this->isOrderableBy($client->type)),
+            'min_quantity' => $this->when($canSeePrices, fn (): int => $this->minQuantityFor($client->type)),
+            'quantity_step' => $this->when($canSeePrices, fn (): int => $this->quantityStepFor($client->type)),
         ];
     }
 }

@@ -5,7 +5,7 @@
         @csrf @method('PUT')
 
         <section class="admin-card space-y-5 p-4 sm:p-6">
-            <h2 class="font-semibold">{{ __('Company') }}</h2>
+            <h2 class="text-sm font-semibold">{{ __('Company') }}</h2>
             <div class="grid gap-4 md:grid-cols-3">
                 <x-admin.field :label="__('Brand name').' *'" name="brand_name">
                     <input type="text" name="brand_name" required value="{{ old('brand_name', $settings->get('brand_name')) }}" class="admin-input">
@@ -19,7 +19,7 @@
         </section>
 
         <section class="admin-card space-y-5 p-4 sm:p-6">
-            <h2 class="font-semibold">{{ __('Contacts') }}</h2>
+            <h2 class="text-sm font-semibold">{{ __('Contacts') }}</h2>
             <div class="grid gap-4 md:grid-cols-3">
                 @foreach (range(0, 2) as $index)
                     <x-admin.field :label="__('Phone').' '.($index + 1).($index === 0 ? ' ('.__('main').')' : '')" :name="'phones.'.$index">
@@ -44,7 +44,7 @@
         </section>
 
         <section class="admin-card space-y-5 p-4 sm:p-6">
-            <h2 class="font-semibold">{{ __('Social networks') }}</h2>
+            <h2 class="text-sm font-semibold">{{ __('Social networks') }}</h2>
             <div class="grid gap-4 md:grid-cols-3">
                 @foreach (\App\Support\SiteSettings::SOCIAL_NETWORKS as $network => $label)
                     <x-admin.field :label="$network === 'telegram' ? __('Telegram channel') : $label" :name="'social.'.$network">
@@ -55,7 +55,7 @@
         </section>
 
         <section class="admin-card space-y-4 p-4 sm:p-6">
-            <h2 class="font-semibold">{{ __('Share preview image') }}</h2>
+            <h2 class="text-sm font-semibold">{{ __('Share preview image') }}</h2>
             <x-admin.field :label="__('Image shown when the site is shared or appears in search previews (1200×630 px recommended)')" name="og_image">
                 @if ($settings->ogImageUrl())
                     <img src="{{ $settings->ogImageUrl() }}" alt="" class="mb-2 h-32 rounded-lg object-cover">

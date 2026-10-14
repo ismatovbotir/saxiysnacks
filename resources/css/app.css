@@ -15,36 +15,87 @@
 }
 
 @layer components {
+    /* Enterprise admin: dense, square-cornered controls on a neutral canvas; brand colours stay as accents. */
     .admin-input {
-        @apply w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-base shadow-xs sm:text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/30;
+        @apply w-full rounded-md border border-black/15 bg-white px-3 py-2 text-base shadow-xs outline-none placeholder:text-black/35 focus:border-brand focus:ring-3 focus:ring-brand/20 disabled:cursor-not-allowed disabled:bg-black/[0.03] disabled:text-black/50 sm:py-1.5 sm:text-sm;
+    }
+
+    .admin-label {
+        @apply mb-1 block text-[13px] font-medium text-black/80;
     }
 
     .admin-btn {
-        @apply inline-flex items-center justify-center gap-2 rounded-full bg-ink px-4 py-2 text-sm font-semibold text-white hover:bg-ink/85;
+        @apply inline-flex h-9 items-center justify-center gap-2 rounded-md bg-ink px-3.5 text-[13px] font-semibold whitespace-nowrap text-white shadow-xs transition-colors hover:bg-ink/85 focus-visible:ring-3 focus-visible:ring-brand/40 focus-visible:outline-none;
     }
 
     .admin-btn-outline {
-        @apply inline-flex items-center justify-center gap-2 rounded-full border border-black/15 bg-white px-4 py-2 text-sm font-semibold hover:bg-black/5;
+        @apply inline-flex h-9 items-center justify-center gap-2 rounded-md border border-black/15 bg-white px-3.5 text-[13px] font-semibold whitespace-nowrap text-ink shadow-xs transition-colors hover:bg-black/[0.04] focus-visible:ring-3 focus-visible:ring-brand/40 focus-visible:outline-none;
+    }
+
+    .admin-btn-danger {
+        @apply inline-flex h-9 items-center justify-center gap-2 rounded-md border border-red-200 bg-white px-3.5 text-[13px] font-semibold whitespace-nowrap text-red-700 shadow-xs transition-colors hover:bg-red-50 focus-visible:ring-3 focus-visible:ring-red-300 focus-visible:outline-none;
+    }
+
+    /* Square icon-only button for row actions. */
+    .admin-icon-btn {
+        @apply inline-grid size-8 place-items-center rounded-md border border-transparent text-black/55 transition-colors hover:border-black/10 hover:bg-white hover:text-ink;
     }
 
     .admin-card {
-        @apply rounded-xl border border-black/10 bg-white;
+        @apply rounded-lg border border-black/10 bg-white shadow-xs;
+    }
+
+    .admin-card-header {
+        @apply flex min-h-12 items-center justify-between gap-3 border-b border-black/10 px-4 py-2.5 sm:px-5;
+    }
+
+    .admin-card-title {
+        @apply text-sm font-semibold;
     }
 
     /* Filters stay reachable under the top bar while scrolling long lists. */
     .admin-filterbar {
-        @apply sticky top-14 z-10 -mx-4 mb-4 flex flex-wrap items-center gap-2 border-b border-black/5 bg-paper/95 px-4 py-2 lg:-mx-8 lg:px-8;
+        @apply sticky top-14 z-10 -mx-4 mb-4 flex flex-wrap items-center gap-2 border-b border-black/10 bg-paper/95 px-4 py-2.5 lg:-mx-8 lg:px-8;
     }
 
+    /* Segmented filter tabs. */
     .admin-chips {
-        @apply -mx-4 flex w-[calc(100%+2rem)] gap-1.5 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:w-auto sm:px-0;
+        @apply -mx-4 flex w-[calc(100%+2rem)] gap-0.5 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:w-auto sm:rounded-md sm:border sm:border-black/10 sm:bg-white sm:p-0.5 sm:shadow-xs;
     }
 
     .admin-chip {
-        @apply inline-flex shrink-0 items-center gap-1.5 rounded-full border border-black/10 bg-white px-3 py-1.5 text-sm font-medium whitespace-nowrap hover:border-black/30 aria-[current=page]:border-ink aria-[current=page]:bg-ink aria-[current=page]:text-white;
+        @apply inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-black/10 bg-white px-3 text-[13px] font-medium whitespace-nowrap text-black/65 hover:text-ink sm:border-transparent sm:bg-transparent aria-[current=page]:border-ink aria-[current=page]:bg-ink aria-[current=page]:text-white;
+    }
+
+    .admin-table {
+        @apply w-full text-left text-sm;
+    }
+
+    .admin-table thead {
+        @apply border-b border-black/10 bg-black/[0.025];
+    }
+
+    .admin-table tbody tr {
+        @apply transition-colors hover:bg-brand/[0.04];
+    }
+
+    .admin-table tbody {
+        @apply divide-y divide-black/[0.06];
     }
 
     .admin-th {
-        @apply px-4 py-3 text-xs font-semibold tracking-wide text-black/50 uppercase;
+        @apply px-4 py-2.5 text-[11px] font-semibold tracking-wider whitespace-nowrap text-black/50 uppercase;
+    }
+
+    .admin-td {
+        @apply px-4 py-2.5 align-middle;
+    }
+
+    .admin-badge {
+        @apply inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-inset;
+    }
+
+    .admin-kbd-num {
+        @apply font-mono text-[13px] tabular-nums;
     }
 }

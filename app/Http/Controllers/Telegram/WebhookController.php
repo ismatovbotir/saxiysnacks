@@ -12,10 +12,12 @@ use App\Http\Controllers\Controller;
 use App\Jobs\SyncClientAdminMessage;
 use App\Models\Order;
 use App\Models\TelegramClient;
+use App\Models\User;
 use App\Services\Telegram\AdminChatMessages;
 use App\Services\Telegram\ClientMessages;
 use App\Services\Telegram\TelegramBot;
 use App\Support\BotLocale;
+use App\Support\Phone;
 use App\Support\TelegramSettings;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -65,6 +67,22 @@ class WebhookController extends Controller
         $locale = BotLocale::fromTelegram($message['from']['language_code'] ?? null);
         $client = TelegramClient::firstWhere('telegram_id', $message['from']['id']);
 
+        if (isset($message['contact'])) {
+            $this->linkStaffPhone($message, $locale);
+
+            return;
+        }
+
+        if (preg_match('/^\/login(?:@\w+)?$/', trim((string) ($message['text'] ?? '')))) {
+            $this->bot->sendMessage($message['chat']['id'], __('bot.login_prompt', [], $locale), [
+                'keyboard' => [[['text' => __('bot.share_phone', [], $locale), 'request_contact' => true]]],
+                'resize_keyboard' => true,
+                'one_time_keyboard' => true,
+            ]);
+
+            return;
+        }
+
         if (isset($message['location'])) {
             $this->saveSharedLocation($message, $client, $locale);
 
@@ -98,6 +116,38 @@ class WebhookController extends Controller
         $this->settings->linkAdminChat((string) $message['chat']['id']);
 
         $this->bot->sendMessage($message['chat']['id'], '✅ This chat now receives new SAXIY customers and orders.');
+    }
+
+    /**
+     * A phone number shared with the "Share my phone number" button links this chat to the user with that phone,
+     * so their one-time sign-in codes arrive here. Only the sender's own contact counts, which Telegram has verified.
+     *
+     * @param  array<string, mixed>  $message
+     */
+    private function linkStaffPhone(array $message, string $locale): void
+    {
+        $chatId = $message['chat']['id'];
+        $hideKeyboard = ['remove_keyboard' => true];
+
+        if (($message['contact']['user_id'] ?? null) !== ($message['from']['id'] ?? false)) {
+            $this->bot->sendMessage($chatId, __('bot.login_not_own', [], $locale), $hideKeyboard);
+
+            return;
+        }
+
+        $phone = Phone::normalize($message['contact']['phone_number'] ?? null);
+        $user = $phone === null ? null : User::query()->where('phone', $phone)->first();
+
+        if ($user === null) {
+            $this->bot->sendMessage($chatId, __('bot.login_unknown', [], $locale), $hideKeyboard);
+
+            return;
+        }
+
+        User::query()->where('telegram_chat_id', $chatId)->whereKeyNot($user->getKey())->update(['telegram_chat_id' => null]);
+        $user->update(['telegram_chat_id' => $chatId]);
+
+        $this->bot->sendMessage($chatId, __('bot.login_linked', ['name' => e($user->name)], $user->locale ?? $locale), $hideKeyboard);
     }
 
     /**

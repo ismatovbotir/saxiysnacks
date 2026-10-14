@@ -18,6 +18,17 @@ enum ClientType: string
         });
     }
 
+    /**
+     * Consumers order by the piece, resellers by the package.
+     */
+    public function orderUnit(): OrderUnit
+    {
+        return match ($this) {
+            self::Consumer => OrderUnit::Piece,
+            self::Reseller => OrderUnit::Package,
+        };
+    }
+
     public function emoji(): string
     {
         return match ($this) {

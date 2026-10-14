@@ -2,40 +2,35 @@
 
 namespace App\View\Composers;
 
+use App\Enums\AdminPermission;
 use App\Enums\OrderStatus;
 use App\Models\Order;
+use App\Models\StockDocument;
 use App\Models\TelegramClient;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use WeakReference;
 
 /**
- * Admin menu grouped by business area, with "needs attention" badges and the current page's section.
+ * Admin menu: the dashboard, then the pages grouped by business area (AdminPermission::group()).
+ * Only pages the user's role may open are listed; groups without any such page disappear.
  */
 class AdminNavigationComposer
 {
     /**
-     * Menu groups in display order: [group label => [route name => [label, icon, badge key|null, mobile tab?]]].
-     * Labels are translation keys (lang/uz.json, lang/ru.json).
+     * Pages offered in the phone tab bar, in priority order; the first ones the role can open are used.
      *
-     * @var array<string, array<string, array{0: string, 1: string, 2: string|null, 3: bool}>>
+     * @var array<int, AdminPermission>
      */
-    public const array GROUPS = [
-        'Sales' => [
-            'admin.dashboard' => ['Dashboard', 'home', null, true],
-            'admin.orders.index' => ['Orders', 'receipt', 'newOrders', true],
-            'admin.clients.index' => ['Customers', 'users', 'newClients', true],
-        ],
-        'Catalog' => [
-            'admin.products.index' => ['Products', 'box', null, true],
-            'admin.categories.index' => ['Categories', 'tag', null, false],
-        ],
-        'Settings' => [
-            'admin.settings.edit' => ['Contacts & social', 'globe', null, false],
-            'admin.telegram.edit' => ['Telegram bot', 'send', null, false],
-            'admin.users.index' => ['Admins', 'shield', null, false],
-        ],
+    private const array MOBILE_TAB_PRIORITY = [
+        AdminPermission::Orders, AdminPermission::Customers, AdminPermission::Products,
+        AdminPermission::Stock, AdminPermission::Payments, AdminPermission::Report,
     ];
+
+    /**
+     * Bottom tab bar on phones: the dashboard plus this many pages, then "More".
+     */
+    private const int MOBILE_TABS = 3;
 
     /**
      * Memoised per request, so the layout and the page header share one set of badge queries.
@@ -62,40 +57,61 @@ class AdminNavigationComposer
      */
     private function data(): array
     {
+        $user = auth()->user();
+        $allowed = collect(AdminPermission::cases())->filter(fn (AdminPermission $permission): bool => $user->canAccess($permission));
+
         $badges = [
-            'newOrders' => Order::query()->where('status', OrderStatus::New)->count(),
-            'newClients' => TelegramClient::query()->where('created_at', '>=', now()->subDay())->count(),
+            AdminPermission::Orders->value => $allowed->contains(AdminPermission::Orders) ? Order::query()->where('status', OrderStatus::New)->count() : 0,
+            AdminPermission::Customers->value => $allowed->contains(AdminPermission::Customers) ? TelegramClient::query()->where('created_at', '>=', now()->subDay())->count() : 0,
         ];
 
+        // The open page belongs to the most specific matching item, e.g. "admin.stock.documents.show" → Documents, not Stock.
+        $pattern = fn (string $routeName): string => preg_replace('/\.(index|edit)$/', '.*', $routeName);
+        $activeRoute = $allowed->map(fn (AdminPermission $permission): string => $permission->route())
+            ->filter(fn (string $name): bool => request()->routeIs($name) || request()->routeIs($pattern($name)))
+            ->sortByDesc(fn (string $name): int => (request()->routeIs($name) ? 1000 : 0) + strlen($pattern($name)))
+            ->first();
+
+        $openDocument = request()->route('document');
+
+        if ($openDocument instanceof StockDocument) {
+            $activeRoute = $openDocument->type->permission()->route();
+        }
+
+        $item = fn (string $routeName, string $label, string $icon, int $badge): array => [
+            'url' => route($routeName),
+            'label' => $label,
+            'icon' => $icon,
+            'badge' => $badge,
+            'active' => $routeName === 'admin.dashboard' ? request()->routeIs($routeName) : $routeName === $activeRoute,
+        ];
+
+        $home = $item('admin.dashboard', __('Dashboard'), 'home', 0);
         $navigation = [];
-        $current = null;
+        $current = $home['active'] ? ['group' => null, 'label' => $home['label'], 'url' => $home['url']] : null;
 
-        foreach (self::GROUPS as $group => $items) {
-            $group = __($group);
+        foreach ($allowed as $permission) {
+            $entry = [...$item($permission->route(), $permission->label(), $permission->icon(), $badges[$permission->value] ?? 0), 'permission' => $permission];
+            $navigation[__($permission->group())][] = $entry;
 
-            foreach ($items as $routeName => [$label, $icon, $badgeKey, $mobileTab]) {
-                $label = __($label);
-                $active = request()->routeIs(preg_replace('/\.(index|edit)$/', '.*', $routeName));
-
-                $navigation[$group][] = [
-                    'url' => route($routeName),
-                    'label' => $label,
-                    'icon' => $icon,
-                    'badge' => $badgeKey ? $badges[$badgeKey] : 0,
-                    'active' => $active,
-                    'mobileTab' => $mobileTab,
-                ];
-
-                if ($active) {
-                    $current = ['group' => $group, 'label' => $label, 'url' => route($routeName)];
-                }
+            if ($entry['active']) {
+                $current = ['group' => __($permission->group()), 'label' => $entry['label'], 'url' => $entry['url']];
             }
         }
 
+        $mobileTabs = collect([$home])->concat(
+            collect(self::MOBILE_TAB_PRIORITY)
+                ->filter(fn (AdminPermission $permission): bool => $allowed->contains($permission))
+                ->take(self::MOBILE_TABS)
+                ->map(fn (AdminPermission $permission): array => collect($navigation[__($permission->group())])->firstWhere('permission', $permission)),
+        )->values();
+
         return [
+            'navigationHome' => $home,
             'navigation' => $navigation,
             'navigationCurrent' => $current,
-            'navigationMoreActive' => $current !== null && ! collect($navigation[$current['group']])->firstWhere('label', $current['label'])['mobileTab'],
+            'navigationMobileTabs' => $mobileTabs,
+            'navigationMoreActive' => $current !== null && ! $mobileTabs->contains('url', $current['url']),
             'navigationBadgeTotal' => array_sum($badges),
         ];
     }

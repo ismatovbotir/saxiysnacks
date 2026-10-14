@@ -9,11 +9,11 @@
     <div class="grid gap-6 lg:grid-cols-2">
         <section class="admin-card space-y-4 p-5 sm:p-6">
             <div class="flex flex-wrap items-center justify-between gap-2">
-                <h2 class="font-semibold">1. {{ __('Bot account') }}</h2>
+                <h2 class="text-sm font-semibold">1. {{ __('Bot account') }}</h2>
                 @if ($settings->botUsername())
-                    <a href="https://t.me/{{ $settings->botUsername() }}" target="_blank" class="rounded-full bg-leaf/10 px-3 py-1 text-sm font-medium text-leaf-dark">✓ {{ '@'.$settings->botUsername() }}</a>
+                    <a href="https://t.me/{{ $settings->botUsername() }}" target="_blank" class="admin-badge ring-black/5 bg-leaf/10 text-sm font-medium text-leaf-dark">✓ {{ '@'.$settings->botUsername() }}</a>
                 @else
-                    <span class="rounded-full bg-black/5 px-3 py-1 text-sm text-black/60">{{ __('Not connected') }}</span>
+                    <span class="admin-badge ring-black/5 bg-black/5 text-sm text-black/60">{{ __('Not connected') }}</span>
                 @endif
             </div>
             <p class="text-sm text-black/60">{!! __('In Telegram open :botfather, send :newbot (or :token for an existing bot) and paste the token here. It is checked with Telegram and stored encrypted.', [
@@ -32,11 +32,11 @@
 
         <section class="admin-card space-y-4 p-5 sm:p-6">
             <div class="flex flex-wrap items-center justify-between gap-2">
-                <h2 class="font-semibold">2. {{ __('Webhook') }}</h2>
+                <h2 class="text-sm font-semibold">2. {{ __('Webhook') }}</h2>
                 @if ($webhookConnected)
-                    <span class="rounded-full bg-leaf/10 px-3 py-1 text-sm font-medium text-leaf-dark">✓ {{ __('Connected') }}</span>
+                    <span class="admin-badge ring-black/5 bg-leaf/10 text-sm font-medium text-leaf-dark">✓ {{ __('Connected') }}</span>
                 @else
-                    <span class="rounded-full bg-black/5 px-3 py-1 text-sm text-black/60">{{ __('Not connected') }}</span>
+                    <span class="admin-badge ring-black/5 bg-black/5 text-sm text-black/60">{{ __('Not connected') }}</span>
                 @endif
             </div>
             <p class="text-sm text-black/60">{{ __('Telegram sends messages, button presses and shared locations to this address. Connecting also sets the bot\'s “Catalog” menu button and the /start command.') }}</p>
@@ -68,11 +68,11 @@
 
         <section class="admin-card space-y-4 p-5 sm:p-6 lg:col-span-2">
             <div class="flex flex-wrap items-center justify-between gap-2">
-                <h2 class="font-semibold">3. {{ __('Admin chat') }}</h2>
+                <h2 class="text-sm font-semibold">3. {{ __('Admin chat') }}</h2>
                 @if ($settings->adminChatId())
-                    <span class="rounded-full bg-leaf/10 px-3 py-1 font-mono text-sm font-medium text-leaf-dark">✓ {{ $settings->adminChatId() }}</span>
+                    <span class="admin-badge ring-black/5 bg-leaf/10 font-mono text-sm font-medium text-leaf-dark">✓ {{ $settings->adminChatId() }}</span>
                 @else
-                    <span class="rounded-full bg-black/5 px-3 py-1 text-sm text-black/60">{{ __('Not linked') }}</span>
+                    <span class="admin-badge ring-black/5 bg-black/5 text-sm text-black/60">{{ __('Not linked') }}</span>
                 @endif
             </div>
             <p class="text-sm text-black/60">{{ __('New customers and orders are posted here with buttons to make a customer a reseller, block them, or move an order to the next status.') }}</p>
@@ -117,13 +117,13 @@
                 $stuck = $queue['oldestPendingAt']?->lt(now()->subMinute());
             @endphp
             <div class="flex flex-wrap items-center justify-between gap-2">
-                <h2 class="font-semibold">4. {{ __('Message queue') }}</h2>
+                <h2 class="text-sm font-semibold">4. {{ __('Message queue') }}</h2>
                 @if ($queue['connection'] === 'sync')
-                    <span class="rounded-full bg-black/5 px-3 py-1 text-sm text-black/60">{{ __('Sent immediately (sync)') }}</span>
+                    <span class="admin-badge ring-black/5 bg-black/5 text-sm text-black/60">{{ __('Sent immediately (sync)') }}</span>
                 @elseif ($stuck)
-                    <span class="rounded-full bg-red-50 px-3 py-1 text-sm font-medium text-red-800">⚠ {{ __('Worker not running') }}</span>
+                    <span class="admin-badge ring-black/5 bg-red-50 text-sm font-medium text-red-800">⚠ {{ __('Worker not running') }}</span>
                 @elseif ($queue['pending'] !== null)
-                    <span class="rounded-full bg-leaf/10 px-3 py-1 text-sm font-medium text-leaf-dark">✓ {{ __('No backlog') }}</span>
+                    <span class="admin-badge ring-black/5 bg-leaf/10 text-sm font-medium text-leaf-dark">✓ {{ __('No backlog') }}</span>
                 @endif
             </div>
             <p class="text-sm text-black/60">{{ __('Order and customer posts to the admin chat, and messages to customers, are sent in the background by the queue worker. The test message above is sent directly, so it works even when the worker is stopped.') }}</p>

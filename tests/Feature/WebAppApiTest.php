@@ -68,20 +68,22 @@ class WebAppApiTest extends TestCase
         $this->getJson(route('webapp.catalog'), $this->webAppHeaders(1001))
             ->assertOk()
             ->assertJsonPath('products.0.price', 150000)
+            ->assertJsonPath('products.0.unit', 'piece')
             ->assertJsonPath('products.0.orderable', true)
             ->assertJsonMissingPath('products.0.consumer_price')
             ->assertJsonPath('products.1.price', null)
             ->assertJsonPath('products.1.orderable', false);
     }
 
-    public function test_resellers_see_reseller_prices_and_fall_back_to_consumer_prices(): void
+    public function test_resellers_see_package_prices_and_fall_back_to_the_consumer_package_price(): void
     {
         TelegramClient::factory()->reseller()->create(['telegram_id' => 1001]);
-        Product::factory()->create(['consumer_price' => 150000, 'reseller_price' => 120000]);
-        Product::factory()->create(['consumer_price' => 90000, 'reseller_price' => null]);
+        Product::factory()->create(['box_quantity' => 40, 'consumer_price' => 3750, 'reseller_price' => 120000]);
+        Product::factory()->create(['box_quantity' => 30, 'consumer_price' => 3000, 'reseller_price' => null]);
 
         $this->getJson(route('webapp.catalog'), $this->webAppHeaders(1001))
             ->assertOk()
+            ->assertJsonPath('products.0.unit', 'package')
             ->assertJsonPath('products.0.price', 120000)
             ->assertJsonPath('products.0.consumer_price', 150000)
             ->assertJsonPath('products.1.price', 90000)
@@ -278,7 +280,7 @@ class WebAppApiTest extends TestCase
     {
         TelegramClient::factory()->reseller()->create(['telegram_id' => 1001, 'latitude' => 41.35, 'longitude' => 69.28, 'address' => 'Warehouse 4']);
         $kurt = Product::factory()->create(['consumer_price' => 120000, 'reseller_price' => 100000]);
-        $nuts = Product::factory()->create(['consumer_price' => 95000, 'reseller_price' => null]);
+        $nuts = Product::factory()->create(['box_quantity' => 1, 'consumer_price' => 95000, 'reseller_price' => null]);
 
         $this->postJson(route('webapp.orders.store'), ['items' => [
             ['product_id' => $kurt->id, 'quantity' => 3],
@@ -287,6 +289,7 @@ class WebAppApiTest extends TestCase
             ->assertCreated()
             ->assertJsonPath('data.total', 490000)
             ->assertJsonPath('data.price_type', 'reseller')
+            ->assertJsonPath('data.unit', 'package')
             ->assertJsonPath('data.delivery.address', 'Warehouse 4');
 
         $this->assertSame([41.35, 69.28], [Order::sole()->delivery_latitude, Order::sole()->delivery_longitude]);

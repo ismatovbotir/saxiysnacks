@@ -112,8 +112,8 @@ class AdminPanelTest extends TestCase
         $this->actingAs($this->admin)
             ->get(route('admin.orders.index'))
             ->assertOk()
-            ->assertSeeInOrder(['Sales', 'Dashboard', 'Orders', 'Customers', 'Catalog', 'Products', 'Categories', 'Settings', 'Contacts &amp; social', 'Telegram bot', 'Admins'], false)
-            ->assertSee('<span class="rounded-full bg-brand px-2 py-0.5 text-xs font-bold text-ink" title="Needs attention">3</span>', false)
+            ->assertSeeInOrder(['Dashboard', 'Sales', 'Orders', 'Customers', 'Catalog', 'Products', 'Categories', 'Warehouse', 'Stock', 'Stock movements', 'Finance', 'Payments', 'Debts', 'Expenses', 'Report', 'Administration', 'Staff', 'Roles &amp; access', 'Contacts &amp; social', 'Telegram bot'], false)
+            ->assertSeeHtml('title="Needs attention">3</span>')
             ->assertSee('aria-current="page"', false);
     }
 
@@ -261,7 +261,7 @@ class AdminPanelTest extends TestCase
 
     public function test_changing_an_order_status_notifies_the_client(): void
     {
-        $order = Order::factory()->create();
+        $order = Order::factory()->create(['status' => OrderStatus::Confirmed]);
 
         $this->actingAs($this->admin)
             ->patch(route('admin.orders.status', $order), ['status' => 'shipped'])

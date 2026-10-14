@@ -2,6 +2,7 @@
 
 namespace App\View\Composers;
 
+use App\Enums\ClientType;
 use App\Models\Category;
 use App\Models\Product;
 use App\Support\SiteSettings;
@@ -40,6 +41,8 @@ class StorefrontComposer
                     'name' => $product->translate('name', $locale),
                     'w' => $product->weightLabel(),
                     'box' => $product->box_quantity,
+                    'min' => $product->minQuantityFor(ClientType::Consumer),
+                    'step' => $product->quantityStepFor(ClientType::Consumer),
                 ],
             ]),
             'telegramBotUrl' => $this->settings->telegramBotUrl(),

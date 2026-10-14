@@ -5,10 +5,10 @@
         <nav class="admin-chips" aria-label="{{ __('Filter customers') }}">
             <a href="{{ route('admin.clients.index', request()->only('search')) }}" class="admin-chip" @if (! $type && ! $status) aria-current="page" @endif>{{ __('All') }}</a>
             @foreach (\App\Enums\ClientType::cases() as $case)
-                <a href="{{ route('admin.clients.index', [...request()->only('search', 'status'), 'type' => $case->value]) }}" class="admin-chip" @if ($type === $case) aria-current="page" @endif>{{ $case->emoji() }} {{ __($case->name.'s') }}</a>
+                <a href="{{ route('admin.clients.index', [...request()->only('search', 'status'), 'type' => $case->value]) }}" class="admin-chip" @if ($type === $case) aria-current="page" @endif>{{ __($case->name.'s') }}</a>
             @endforeach
             @foreach (\App\Enums\ClientStatus::cases() as $case)
-                <a href="{{ route('admin.clients.index', [...request()->only('search', 'type'), 'status' => $case->value]) }}" class="admin-chip" @if ($status === $case) aria-current="page" @endif>{{ $case->emoji() }} {{ $case->label() }}</a>
+                <a href="{{ route('admin.clients.index', [...request()->only('search', 'type'), 'status' => $case->value]) }}" class="admin-chip" @if ($status === $case) aria-current="page" @endif>{{ $case->label() }}</a>
             @endforeach
         </nav>
         <form method="GET" class="flex w-full gap-2 sm:ml-auto sm:w-auto">
@@ -41,20 +41,20 @@
     </div>
 
     <div class="admin-card hidden overflow-x-auto md:block">
-        <table class="w-full text-left text-sm">
-            <thead class="border-b border-black/10">
+        <table class="admin-table">
+            <thead>
                 <tr><th class="admin-th">{{ __('Customer') }}</th><th class="admin-th">{{ __('Company') }}</th><th class="admin-th">{{ __('Prices') }}</th><th class="admin-th">{{ __('Orders') }}</th><th class="admin-th">{{ __('Status') }}</th><th class="admin-th">{{ __('Registered') }}</th><th></th></tr>
             </thead>
-            <tbody class="divide-y divide-black/5">
+            <tbody>
                 @forelse ($clients as $client)
-                    <tr class="hover:bg-black/2">
-                        <td class="px-4 py-3"><a href="{{ route('admin.clients.show', $client) }}" class="font-semibold hover:underline">{{ $client->fullName() }}</a><span class="block text-xs text-black/50">{{ $client->phone }}{{ $client->telegram_username ? ' · @'.$client->telegram_username : '' }}</span></td>
-                        <td class="px-4 py-3">{{ $client->company_name ?? '—' }}@if ($client->vat_number)<span class="block font-mono text-xs text-black/50">{{ __('VAT') }} {{ $client->vat_number }}</span>@endif</td>
-                        <td class="px-4 py-3"><x-admin.status-badge :status="$client->type" /></td>
-                        <td class="px-4 py-3">{{ $client->orders_count }}</td>
-                        <td class="px-4 py-3"><x-admin.status-badge :status="$client->status" /></td>
-                        <td class="px-4 py-3 whitespace-nowrap text-black/60">{{ $client->created_at->format('d.m.Y') }}</td>
-                        <td class="px-4 py-3 text-right">@include('admin.clients.partials.actions')</td>
+                    <tr>
+                        <td class="admin-td"><a href="{{ route('admin.clients.show', $client) }}" class="font-semibold hover:underline">{{ $client->fullName() }}</a><span class="block text-xs text-black/50">{{ $client->phone }}{{ $client->telegram_username ? ' · @'.$client->telegram_username : '' }}</span></td>
+                        <td class="admin-td">{{ $client->company_name ?? '—' }}@if ($client->vat_number)<span class="block font-mono text-xs text-black/50">{{ __('VAT') }} {{ $client->vat_number }}</span>@endif</td>
+                        <td class="admin-td"><x-admin.status-badge :status="$client->type" /></td>
+                        <td class="admin-td">{{ $client->orders_count }}</td>
+                        <td class="admin-td"><x-admin.status-badge :status="$client->status" /></td>
+                        <td class="admin-td whitespace-nowrap text-black/60">{{ $client->created_at->format('d.m.Y') }}</td>
+                        <td class="admin-td text-right">@include('admin.clients.partials.actions')</td>
                     </tr>
                 @empty
                     <tr><td colspan="7" class="px-4 py-10 text-center text-black/50">{{ __('No customers found.') }}</td></tr>

@@ -4,103 +4,101 @@
         @if ($product->exists)
             <form method="POST" action="{{ route('admin.products.destroy', $product) }}" onsubmit="return confirm(@js(__('Delete this product?')))">
                 @csrf @method('DELETE')
-                <button class="admin-btn-outline text-red-700">{{ __('Delete') }}</button>
+                <button class="admin-btn-danger">{{ __('Delete') }}</button>
             </form>
         @endif
     </x-admin.page-header>
 
     <form method="POST" enctype="multipart/form-data"
           action="{{ $product->exists ? route('admin.products.update', $product) : route('admin.products.store') }}"
-          class="admin-card space-y-6 p-4 sm:p-6">
+          class="admin-card p-4 sm:p-6">
         @csrf
         @if ($product->exists) @method('PUT') @endif
 
-        <div class="grid gap-4 md:grid-cols-3">
-            <x-admin.field :label="__('Category').' *'" name="category_id">
-                <select name="category_id" required class="admin-input">
-                    <option value="">{{ __('Choose…') }}</option>
-                    @foreach ($categories as $category)
-                        <option value="{{ $category->id }}" @selected((int) old('category_id', $product->category_id) === $category->id)>{{ $category->translate('name', app()->getLocale()) }}</option>
-                    @endforeach
-                </select>
-            </x-admin.field>
-            <div>
-                <span class="mb-1 block text-sm font-medium">{{ __('Page address') }}</span>
-                @if ($product->exists)
-                    <a href="{{ route('product', [$product->category, $product]) }}" target="_blank" class="block truncate rounded-lg bg-black/5 px-3 py-2 font-mono text-sm hover:underline">…/{{ $product->slug }}</a>
-                @else
-                    <span class="block rounded-lg bg-black/5 px-3 py-2 text-sm text-black/50">{{ __('Generated from the English name and weight on save') }}</span>
-                @endif
-            </div>
-            <x-admin.field :label="__('SKU (internal code)')" name="sku">
-                <input type="text" name="sku" value="{{ old('sku', $product->sku) }}" class="admin-input">
-            </x-admin.field>
-        </div>
-
-        <x-admin.translations :label="__('Name')" name="name" :values="$product->name ?? []" />
-        <x-admin.translations :label="__('Description (composition, shelf life — shown on the product page and in Google)')" name="description" :values="$product->description ?? []" textarea :required="[]" />
-
-        <div class="grid gap-4 md:grid-cols-3">
-            <x-admin.field :label="__('Weight, g').' *'" name="weight_grams">
-                <input type="number" name="weight_grams" min="1" required value="{{ old('weight_grams', $product->weight_grams) }}" class="admin-input">
-            </x-admin.field>
-            <x-admin.field :label="__('Pieces per box')" name="box_quantity">
-                <input type="number" name="box_quantity" min="1" value="{{ old('box_quantity', $product->box_quantity) }}" class="admin-input">
-            </x-admin.field>
-            <x-admin.field :label="__('Consumer price per box, so\'m')" name="consumer_price" :hint="__('Default price for every registered customer. Empty = cannot be ordered.')">
-                <input type="text" inputmode="numeric" name="consumer_price" value="{{ old('consumer_price', $product->consumer_price) }}" class="admin-input">
-            </x-admin.field>
-            <x-admin.field :label="__('Reseller price per box, so\'m')" name="reseller_price" :hint="__('Seen by customers marked as resellers. Empty = they pay the consumer price.')">
-                <input type="text" inputmode="numeric" name="reseller_price" value="{{ old('reseller_price', $product->reseller_price) }}" class="admin-input">
-            </x-admin.field>
-            <x-admin.field :label="__('Sort order')" name="sort_order">
-                <input type="number" name="sort_order" min="0" value="{{ old('sort_order', $product->sort_order ?? 0) }}" class="admin-input">
-            </x-admin.field>
-        </div>
-
-        <fieldset class="space-y-3">
-            <legend class="mb-1 text-sm font-medium">{{ __('Codes') }} <span class="font-normal text-black/50">({{ __('optional') }})</span></legend>
+        <x-admin.section :title="__('General')" :description="__('Category, internal code and the public page address.')">
             <div class="grid gap-4 md:grid-cols-3">
+                <x-admin.field :label="__('Category').' *'" name="category_id">
+                    <select name="category_id" required class="admin-input">
+                        <option value="">{{ __('Choose…') }}</option>
+                        @foreach ($categories as $category)
+                            <option value="{{ $category->id }}" @selected((int) old('category_id', $product->category_id) === $category->id)>{{ $category->translate('name', app()->getLocale()) }}</option>
+                        @endforeach
+                    </select>
+                </x-admin.field>
+                <div>
+                    <span class="admin-label">{{ __('Page address') }}</span>
+                    @if ($product->exists)
+                        <a href="{{ route('product', [$product->category, $product]) }}" target="_blank" class="block truncate rounded-md bg-black/[0.04] px-3 py-2 font-mono text-sm hover:underline">…/{{ $product->slug }}</a>
+                    @else
+                        <span class="block rounded-md bg-black/[0.04] px-3 py-2 text-sm text-black/50">{{ __('Generated from the English name and weight on save') }}</span>
+                    @endif
+                </div>
+                <x-admin.field :label="__('SKU (internal code)')" name="sku">
+                    <input type="text" name="sku" value="{{ old('sku', $product->sku) }}" class="admin-input">
+                </x-admin.field>
+            </div>
+            <div class="grid gap-4 md:grid-cols-2">
+                <x-admin.field :label="__('Weight, g').' *'" name="weight_grams">
+                    <input type="number" name="weight_grams" min="1" required value="{{ old('weight_grams', $product->weight_grams) }}" class="admin-input">
+                </x-admin.field>
+                <x-admin.field :label="__('Sort order')" name="sort_order">
+                    <input type="number" name="sort_order" min="0" value="{{ old('sort_order', $product->sort_order ?? 0) }}" class="admin-input">
+                </x-admin.field>
+            </div>
+        </x-admin.section>
+
+        <x-admin.section :title="__('Name & description')" :description="__('Description (composition, shelf life — shown on the product page and in Google)')">
+            <x-admin.translations :label="__('Name')" name="name" :values="$product->name ?? []" />
+            <x-admin.translations :label="__('Description')" name="description" :values="$product->description ?? []" textarea :required="[]" />
+        </x-admin.section>
+
+        <x-admin.section wide :title="__('Units, prices & ordering')" :description="__('Consumers order in pieces, resellers in packages.')">
+            <livewire:admin.product-units :product="$product" :old="session()->getOldInput()" :field-errors="$errors->getMessages()" />
+        </x-admin.section>
+
+        <x-admin.section :title="__('Codes')" :description="__('Optional. Used on Uzbek e-invoices; package codes are set per unit above.')">
+            <div class="grid gap-4 md:grid-cols-2">
                 <x-admin.field :label="__('GTIN / barcode')" name="gtin" :hint="__('8, 12, 13 or 14 digits')">
                     <input type="text" inputmode="numeric" name="gtin" value="{{ old('gtin', $product->gtin) }}" class="admin-input font-mono">
                 </x-admin.field>
                 <x-admin.field :label="__('Class code (MXIK / ИКПУ)')" name="class_code" :hint="__('17 digits from tasnif.soliq.uz')">
                     <input type="text" inputmode="numeric" name="class_code" value="{{ old('class_code', $product->class_code) }}" class="admin-input font-mono">
                 </x-admin.field>
-                <x-admin.field :label="__('Package code')" name="package_code">
-                    <input type="text" inputmode="numeric" name="package_code" value="{{ old('package_code', $product->package_code) }}" class="admin-input font-mono">
+            </div>
+        </x-admin.section>
+
+        <x-admin.section :title="__('Media')" :description="__('Recommended: square, at least 1200×1200 px — it is also used as the preview image in Google and messengers.')">
+            <div class="grid gap-4 md:grid-cols-2">
+                <x-admin.field :label="__('Photo (JPG, PNG, WebP up to 4 MB)')" name="image">
+                    @if ($product->image_url)
+                        <div class="mb-2 flex items-center gap-3">
+                            <img src="{{ $product->image_url }}" alt="" class="size-20 rounded-lg object-cover">
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="remove_image" value="1"> {{ __('Remove photo') }}</label>
+                        </div>
+                    @endif
+                    <input type="file" name="image" accept="image/jpeg,image/png,image/webp" class="admin-input">
+                </x-admin.field>
+                <x-admin.field :label="__('Pack illustration (used when there is no photo)')" name="illustration">
+                    <select name="illustration" class="admin-input">
+                        <option value="">{{ __('None') }}</option>
+                        @foreach (\App\Enums\ProductIllustration::cases() as $illustration)
+                            <option value="{{ $illustration->value }}" @selected(old('illustration', $product->illustration?->value) === $illustration->value)>{{ $illustration->label() }}</option>
+                        @endforeach
+                    </select>
                 </x-admin.field>
             </div>
-        </fieldset>
+        </x-admin.section>
 
-        <div class="grid gap-4 md:grid-cols-2">
-            <x-admin.field :label="__('Photo (JPG, PNG, WebP up to 4 MB)')" name="image" :hint="__('Recommended: square, at least 1200×1200 px — it is also used as the preview image in Google and messengers.')">
-                @if ($product->image_url)
-                    <div class="mb-2 flex items-center gap-3">
-                        <img src="{{ $product->image_url }}" alt="" class="size-20 rounded-lg object-cover">
-                        <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="remove_image" value="1"> {{ __('Remove photo') }}</label>
-                    </div>
-                @endif
-                <input type="file" name="image" accept="image/jpeg,image/png,image/webp" class="admin-input">
-            </x-admin.field>
-            <x-admin.field :label="__('Pack illustration (used when there is no photo)')" name="illustration">
-                <select name="illustration" class="admin-input">
-                    <option value="">{{ __('None') }}</option>
-                    @foreach (\App\Enums\ProductIllustration::cases() as $illustration)
-                        <option value="{{ $illustration->value }}" @selected(old('illustration', $product->illustration?->value) === $illustration->value)>{{ $illustration->label() }}</option>
-                    @endforeach
-                </select>
-            </x-admin.field>
-        </div>
-
-        <div class="flex flex-wrap gap-6 text-sm">
-            @foreach (['is_active' => __('Visible on the site and in the Telegram app'), 'is_featured' => __('Best seller (shown on the home page)'), 'is_new' => __('Mark as new')] as $flag => $label)
-                <label class="flex items-center gap-2">
-                    <input type="hidden" name="{{ $flag }}" value="0">
-                    <input type="checkbox" name="{{ $flag }}" value="1" class="accent-brand" @checked(old($flag, $product->{$flag}))> {{ $label }}
-                </label>
-            @endforeach
-        </div>
+        <x-admin.section :title="__('Visibility')">
+            <div class="flex flex-col gap-3 text-sm">
+                @foreach (['is_active' => __('Visible on the site and in the Telegram app'), 'is_featured' => __('Best seller (shown on the home page)'), 'is_new' => __('Mark as new')] as $flag => $label)
+                    <label class="flex items-center gap-2">
+                        <input type="hidden" name="{{ $flag }}" value="0">
+                        <input type="checkbox" name="{{ $flag }}" value="1" class="accent-brand" @checked(old($flag, $product->{$flag}))> {{ $label }}
+                    </label>
+                @endforeach
+            </div>
+        </x-admin.section>
 
         <x-admin.form-actions :cancel="route('admin.products.index')" />
     </form>

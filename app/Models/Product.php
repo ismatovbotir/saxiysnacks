@@ -14,10 +14,11 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
 #[Fillable([
-    'category_id', 'sku', 'gtin', 'class_code', 'package_code', 'name', 'description', 'weight_grams', 'box_quantity', 'consumer_price', 'reseller_price',
+    'category_id', 'sku', 'gtin', 'class_code', 'package_code', 'box_package_code', 'name', 'description', 'weight_grams', 'box_quantity', 'consumer_price', 'consumer_min_quantity', 'consumer_quantity_step', 'reseller_price', 'reseller_min_quantity', 'reseller_quantity_step',
     'illustration', 'image_path', 'is_featured', 'is_new', 'is_active', 'sort_order',
 ])]
 class Product extends Model
@@ -37,6 +38,10 @@ class Product extends Model
             'box_quantity' => 'integer',
             'consumer_price' => 'integer',
             'reseller_price' => 'integer',
+            'consumer_min_quantity' => 'integer',
+            'consumer_quantity_step' => 'integer',
+            'reseller_min_quantity' => 'integer',
+            'reseller_quantity_step' => 'integer',
             'illustration' => ProductIllustration::class,
             'is_featured' => 'boolean',
             'is_new' => 'boolean',
@@ -56,6 +61,25 @@ class Product extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * @return HasMany<StockMovement, $this>
+     */
+    public function stockMovements(): HasMany
+    {
+        return $this->hasMany(StockMovement::class);
+    }
+
+    /**
+     * Adds "stock_balance" (pieces in the warehouse) to each product.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withStockBalance(Builder $query): void
+    {
+        $query->withSum('stockMovements as stock_balance', 'quantity');
     }
 
     /**
@@ -88,15 +112,64 @@ class Product extends Model
     }
 
     /**
-     * The price per box for a client type. Resellers fall back to the consumer price when no reseller price is set.
+     * The price per order unit for a client type: per piece for consumers, per package for resellers.
+     * Resellers fall back to the consumer piece price × pieces per package when no reseller price is set.
      */
     public function priceFor(ClientType $type): ?int
     {
         $price = $type === ClientType::Reseller
-            ? ($this->reseller_price ?? $this->consumer_price)
+            ? ($this->reseller_price ?? $this->consumerPackagePrice())
             : $this->consumer_price;
 
         return $price > 0 ? $price : null;
+    }
+
+    /**
+     * What a package costs at consumer prices; unknown when the package size is not set.
+     */
+    public function consumerPackagePrice(): ?int
+    {
+        return $this->consumer_price !== null && $this->box_quantity
+            ? $this->consumer_price * $this->box_quantity
+            : null;
+    }
+
+    /**
+     * Fewest units (pieces for consumers, packages for resellers) a customer of this type can order.
+     */
+    public function minQuantityFor(ClientType $type): int
+    {
+        $minimum = $type === ClientType::Reseller ? $this->reseller_min_quantity : $this->consumer_min_quantity;
+
+        return max(1, (int) $minimum);
+    }
+
+    /**
+     * Units added per step above the minimum (e.g. min 5, step 5 → 5, 10, 15…).
+     */
+    public function quantityStepFor(ClientType $type): int
+    {
+        $step = $type === ClientType::Reseller ? $this->reseller_quantity_step : $this->consumer_quantity_step;
+
+        return max(1, (int) $step);
+    }
+
+    public function allowsQuantity(ClientType $type, int $quantity): bool
+    {
+        $minimum = $this->minQuantityFor($type);
+
+        return $quantity >= $minimum && ($quantity - $minimum) % $this->quantityStepFor($type) === 0;
+    }
+
+    /**
+     * The nearest allowed quantity at or above the requested one.
+     */
+    public function allowedQuantity(ClientType $type, int $quantity): int
+    {
+        $minimum = $this->minQuantityFor($type);
+        $step = $this->quantityStepFor($type);
+
+        return $quantity <= $minimum ? $minimum : $minimum + (int) ceil(($quantity - $minimum) / $step) * $step;
     }
 
     public function isOrderableBy(ClientType $type): bool

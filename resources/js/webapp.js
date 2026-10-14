@@ -13,7 +13,7 @@ const T = {
         blockedH: 'Hisobingiz bloklangan', blockedP: 'Batafsil ma\'lumot uchun biz bilan bog\'laning. Katalogni ko\'rishingiz mumkin.',
         resellerBadge: '⭐ Diler narxlari', optional: 'ixtiyoriy',
         firstName: 'Ism', lastName: 'Familiya', phone: 'Telefon raqam', company: 'Kompaniya nomi', vat: 'STIR (INN)', submit: 'Yuborish', back: 'Orqaga',
-        add: 'Savatga', perBox: 'quti', unavailable: 'Narx so\'rov bo\'yicha',
+        add: 'Savatga', units: { piece: 'dona', package: 'qadoq' }, unavailable: 'Narx so\'rov bo\'yicha',
         cartEmpty: 'Savat bo\'sh. Katalogdan mahsulot qo\'shing.', comment: 'Izoh (yetkazish vaqti va h.k.)', total: 'Jami', placeOrder: 'Buyurtma berish',
         orderSent: 'Buyurtma yuborildi! Menejer tez orada tasdiqlaydi.', ordersEmpty: 'Hali buyurtmalar yo\'q.', error: 'Xatolik yuz berdi. Qayta urinib ko\'ring.',
         location: 'Yetkazish manzili', shareLocation: '📍 Joriy joylashuvni yuborish', updateLocation: '📍 Joylashuvni yangilash', locating: 'Joylashuv aniqlanmoqda…',
@@ -22,7 +22,7 @@ const T = {
         addressDetails: 'Manzil tafsilotlari (uy, podyezd, mo\'ljal)', chooseLocation: 'Yetkazish manzilini tanlang',
         locationFailed: 'Joylashuvni olib bo\'lmadi. Ruxsat bering yoki uni bot chatida yuboring: 📎 → Joylashuv.', openSettings: 'Sozlamalarni ochish',
         status: { new: 'Yangi', confirmed: 'Tasdiqlangan', shipped: 'Jo\'natilgan', completed: 'Bajarilgan', cancelled: 'Bekor qilingan' },
-        profileStatus: { active: 'Faol', blocked: 'Bloklangan' }, profileType: { consumer: 'Chakana narxlar', reseller: 'Diler narxlari' }, prices: 'Narxlar',
+        profileStatus: { active: 'Faol', blocked: 'Bloklangan' }, profileType: { consumer: 'Chakana narxlar', reseller: 'Diler narxlari' }, prices: 'Narxlar', minOrder: 'kamida {n} {unit}', stepOf: '{n} tadan',
         myList: '⭐ Sevimlilar', saveToList: 'Sevimlilarga qo\'shish', removeFromList: 'Sevimlilardan olib tashlash', addAllToCart: 'Hammasini savatga qo\'shish',
         saveCartToList: '⭐ Savatni sevimlilarga saqlash', listSaved: 'Sevimlilarga saqlandi', listEmpty: 'Sevimlilar hozircha bo\'sh. Keyingi buyurtmalar uchun mahsulotdagi ☆ tugmasini bosing.', usualQty: 'odatda', repeatOrder: '🔁 Buyurtmani takrorlash', addedToCart: 'Savatga qo\'shildi',
     },
@@ -33,7 +33,7 @@ const T = {
         blockedH: 'Аккаунт заблокирован', blockedP: 'Свяжитесь с нами для подробностей. Каталог по-прежнему доступен.',
         resellerBadge: '⭐ Цены для реселлеров', optional: 'необязательно',
         firstName: 'Имя', lastName: 'Фамилия', phone: 'Номер телефона', company: 'Название компании', vat: 'ИНН', submit: 'Отправить', back: 'Назад',
-        add: 'В корзину', perBox: 'кор.', unavailable: 'Цена по запросу',
+        add: 'В корзину', units: { piece: 'шт.', package: 'уп.' }, unavailable: 'Цена по запросу',
         cartEmpty: 'Корзина пуста. Добавьте товары из каталога.', comment: 'Комментарий (время доставки и т.п.)', total: 'Итого', placeOrder: 'Оформить заказ',
         orderSent: 'Заказ отправлен! Менеджер скоро его подтвердит.', ordersEmpty: 'Заказов пока нет.', error: 'Что-то пошло не так. Попробуйте ещё раз.',
         location: 'Адрес доставки', shareLocation: '📍 Отправить текущую локацию', updateLocation: '📍 Обновить локацию', locating: 'Определяем локацию…',
@@ -42,7 +42,7 @@ const T = {
         addressDetails: 'Уточнение адреса (дом, подъезд, ориентир)', chooseLocation: 'Выберите адрес доставки',
         locationFailed: 'Не удалось получить локацию. Разрешите доступ или отправьте её в чат с ботом: 📎 → Геопозиция.', openSettings: 'Открыть настройки',
         status: { new: 'Новый', confirmed: 'Подтверждён', shipped: 'Отправлен', completed: 'Выполнен', cancelled: 'Отменён' },
-        profileStatus: { active: 'Активен', blocked: 'Заблокирован' }, profileType: { consumer: 'Розничные цены', reseller: 'Цены для реселлеров' }, prices: 'Цены',
+        profileStatus: { active: 'Активен', blocked: 'Заблокирован' }, profileType: { consumer: 'Розничные цены', reseller: 'Цены для реселлеров' }, prices: 'Цены', minOrder: 'от {n} {unit}', stepOf: 'по {n}',
         myList: '⭐ Избранное', saveToList: 'Добавить в избранное', removeFromList: 'Убрать из избранного', addAllToCart: 'Добавить всё в корзину',
         saveCartToList: '⭐ Сохранить корзину в избранное', listSaved: 'Сохранено в избранное', listEmpty: 'В избранном пока пусто. Нажмите ☆ на товаре, чтобы быстро заказывать его в следующий раз.', usualQty: 'обычно', repeatOrder: '🔁 Повторить заказ', addedToCart: 'Добавлено в корзину',
     },
@@ -53,7 +53,7 @@ const T = {
         blockedH: 'Your account is blocked', blockedP: 'Please contact us for details. You can still browse the catalog.',
         resellerBadge: '⭐ Reseller prices', optional: 'optional',
         firstName: 'First name', lastName: 'Last name', phone: 'Phone number', company: 'Company name', vat: 'VAT / TIN', submit: 'Submit', back: 'Back',
-        add: 'Add', perBox: 'box', unavailable: 'Price on request',
+        add: 'Add', units: { piece: 'pcs', package: 'pkg' }, unavailable: 'Price on request',
         cartEmpty: 'Your cart is empty. Add products from the catalog.', comment: 'Comment (delivery time, etc.)', total: 'Total', placeOrder: 'Place order',
         orderSent: 'Order sent! A manager will confirm it shortly.', ordersEmpty: 'No orders yet.', error: 'Something went wrong. Please try again.',
         location: 'Delivery location', shareLocation: '📍 Send my current location', updateLocation: '📍 Update location', locating: 'Getting your location…',
@@ -62,7 +62,7 @@ const T = {
         addressDetails: 'Address details (house, entrance, landmark)', chooseLocation: 'Choose a delivery location',
         locationFailed: 'Could not get your location. Allow access, or send it in the bot chat: 📎 → Location.', openSettings: 'Open settings',
         status: { new: 'New', confirmed: 'Confirmed', shipped: 'Shipped', completed: 'Completed', cancelled: 'Cancelled' },
-        profileStatus: { active: 'Active', blocked: 'Blocked' }, profileType: { consumer: 'Consumer prices', reseller: 'Reseller prices' }, prices: 'Prices',
+        profileStatus: { active: 'Active', blocked: 'Blocked' }, profileType: { consumer: 'Consumer prices', reseller: 'Reseller prices' }, prices: 'Prices', minOrder: 'min {n} {unit}', stepOf: 'by {n}',
         myList: '⭐ Favorites', saveToList: 'Add to favorites', removeFromList: 'Remove from favorites', addAllToCart: 'Add all to cart',
         saveCartToList: '⭐ Save cart to favorites', listSaved: 'Saved to favorites', listEmpty: 'No favorites yet. Tap ☆ on a product to reorder it quickly next time.', usualQty: 'usually', repeatOrder: '🔁 Repeat order', addedToCart: 'Added to cart',
     },
@@ -179,6 +179,17 @@ function pickedCoordinates() {
 const cartKey = `saxiy-webapp-cart-${tgUser.id || 0}`;
 try { state.cart = JSON.parse(localStorage.getItem(cartKey) || '{}'); } catch (e) { state.cart = {}; }
 
+/* ordering rules per product for this customer type: first tap adds the minimum, then one step at a time */
+const minQty = (p) => p?.min_quantity || 1;
+const stepQty = (p) => p?.quantity_step || 1;
+const fitQty = (p, qty) => (qty <= 0 ? 0 : qty <= minQty(p) ? minQty(p) : minQty(p) + Math.ceil((qty - minQty(p)) / stepQty(p)) * stepQty(p));
+const nextQty = (p, qty) => (qty ? qty + stepQty(p) : minQty(p));
+const prevQty = (p, qty) => (qty - stepQty(p) < minQty(p) ? 0 : qty - stepQty(p));
+/* consumers count pieces, resellers packages; old orders in the other unit cannot be repeated as-is */
+const unitLabel = (unit) => L.units[unit] || L.units.piece;
+const repeatable = (order, item) => byId(item.product_id)?.orderable && byId(item.product_id).unit === order.unit;
+const rulesHint = (p) => [minQty(p) > 1 ? L.minOrder.replace('{n}', minQty(p)).replace('{unit}', unitLabel(p.unit)) : '', stepQty(p) > 1 ? L.stepOf.replace('{n}', stepQty(p)) : ''].filter(Boolean).join(' · ');
+
 function setQty(id, qty) {
     if (qty > 0) state.cart[id] = qty; else delete state.cart[id];
     try { localStorage.setItem(cartKey, JSON.stringify(state.cart)); } catch (e) { /* storage unavailable */ }
@@ -213,7 +224,7 @@ async function saveToList(quantities) {
 
 async function toggleSaved(id) {
     if (!isSaved(id)) {
-        if (await saveToList({ [id]: state.cart[id] || 1 })) flash(L.listSaved);
+        if (await saveToList({ [id]: state.cart[id] || minQty(byId(id)) })) flash(L.listSaved);
         return;
     }
     const previous = state.saved;
@@ -231,7 +242,7 @@ async function toggleSaved(id) {
 
 function addToCart(quantities) {
     Object.entries(quantities).forEach(([id, qty]) => {
-        if (byId(id)?.orderable) state.cart[id] = (state.cart[id] || 0) + qty;
+        if (byId(id)?.orderable) state.cart[id] = fitQty(byId(id), (state.cart[id] || 0) + qty);
     });
     try { localStorage.setItem(cartKey, JSON.stringify(state.cart)); } catch (e) { /* storage unavailable */ }
     state.tab = 'cart';
@@ -271,7 +282,8 @@ function productCard(p) {
     if (isActive()) {
         const qty = state.cart[p.id] || 0;
         foot = p.orderable
-            ? `<div class="mt-auto pt-1 font-bold">${p.consumer_price && p.consumer_price > p.price ? `<s class="block text-xs font-normal text-tg-hint">${money(p.consumer_price)}</s>` : ''}${money(p.price)} <span class="text-xs font-normal text-tg-hint">/ ${esc(L.perBox)}</span></div>
+            ? `<div class="mt-auto pt-1 font-bold">${p.consumer_price && p.consumer_price > p.price ? `<s class="block text-xs font-normal text-tg-hint">${money(p.consumer_price)}</s>` : ''}${money(p.price)} <span class="text-xs font-normal text-tg-hint">/ ${esc(unitLabel(p.unit))}</span></div>
+               ${rulesHint(p) ? `<p class="text-xs font-semibold text-tg-link">${esc(rulesHint(p))}</p>` : ''}
                ${qty ? stepper(p.id, qty) : `<button class="${ui.btn} py-2.5" data-inc="${p.id}">${esc(L.add)}</button>`}`
             : `<p class="mt-auto text-xs text-tg-hint">${esc(L.unavailable)}</p>`;
     }
@@ -281,7 +293,7 @@ function productCard(p) {
     return `<article class="${ui.card} flex flex-col overflow-hidden">
         <div class="relative grid aspect-square place-items-center bg-tg-button/5 p-2">${picture(p)}${bookmark}</div>
         <div class="flex flex-1 flex-col gap-1.5 p-3"><h3 class="text-sm leading-snug font-semibold">${esc(name(p.name))}</h3>
-        <p class="${ui.hint}">${esc(p.weight)} ${esc(L.g)}${p.box_quantity ? ` · ${p.box_quantity} ${esc(L.pcs)}` : ''}${state.category === 'mine' && state.saved[p.id] ? ` · ${esc(L.usualQty)} ${state.saved[p.id]} ${esc(L.perBox)}` : ''}</p>${foot}</div></article>`;
+        <p class="${ui.hint}">${esc(p.weight)} ${esc(L.g)}${p.box_quantity ? ` · ${p.box_quantity} ${esc(L.pcs)}` : ''}${state.category === 'mine' && state.saved[p.id] ? ` · ${esc(L.usualQty)} ${state.saved[p.id]} ${esc(unitLabel(p.unit))}` : ''}</p>${foot}</div></article>`;
 }
 
 function viewCatalog() {
@@ -312,7 +324,7 @@ function viewCart() {
 
     return `<h2 class="${ui.h2}">${esc(L.cart)}</h2>
         <div class="${ui.card} divide-y divide-tg-text/10">${lines.map(({ product: p, qty }) => `<div class="flex items-center gap-3 p-3">
-            <div class="min-w-0 flex-1"><b class="block truncate text-sm">${esc(name(p.name))}</b><span class="${ui.hint}">${esc(p.weight)} ${esc(L.g)} · ${money(p.price)} × ${qty}</span></div>
+            <div class="min-w-0 flex-1"><b class="block truncate text-sm">${esc(name(p.name))}</b><span class="${ui.hint}">${esc(p.weight)} ${esc(L.g)} · ${money(p.price)} × ${qty}${rulesHint(p) ? ` · ${esc(rulesHint(p))}` : ''}</span></div>
             ${stepper(p.id, qty, 'w-32 shrink-0')}</div>`).join('')}</div>
         <button class="mt-2 w-full rounded-xl px-4 py-2 text-sm font-semibold text-tg-link active:bg-tg-text/5" data-save-cart>${esc(L.saveCartToList)}</button>
         <div class="flex justify-between px-1 py-4 text-lg font-bold"><span>${esc(L.total)}</span><span>${money(cartTotal())}</span></div>
@@ -329,9 +341,9 @@ function viewOrders() {
     return `<h2 class="${ui.h2}">${esc(L.orders)}</h2><div class="grid gap-2.5">${state.orders.map((o) => `<article class="${ui.card} p-4 text-sm">
         <div class="flex items-center justify-between gap-2"><b>${esc(o.number)}</b>${badge(o.status)}</div>
         <p class="${ui.hint} mt-1">${new Date(o.created_at).toLocaleString(lang)} · <b class="text-tg-text">${money(o.total)}</b></p>
-        <p class="mt-2">${o.items.map((i) => `${esc(i.name)} ${i.weight_grams} ${esc(L.g)} × ${i.quantity}`).join(', ')}</p>
+        <p class="mt-2">${o.items.map((i) => `${esc(i.name)} ${i.weight_grams} ${esc(L.g)} × ${i.quantity} ${esc(unitLabel(o.unit))}`).join(', ')}</p>
         <a href="${esc(mapUrl(o.delivery))}" data-link class="mt-2 inline-block text-tg-link underline">📍 ${esc(o.delivery.address || L.viewOnMap)}</a>
-        ${o.items.some((i) => byId(i.product_id)?.orderable) ? `<button class="${ui.btnGhost} mt-3 py-2.5" data-repeat="${esc(o.number)}">${esc(L.repeatOrder)}</button>` : ''}</article>`).join('')}</div>`;
+        ${o.items.some((i) => repeatable(o, i)) ? `<button class="${ui.btnGhost} mt-3 py-2.5" data-repeat="${esc(o.number)}">${esc(L.repeatOrder)}</button>` : ''}</article>`).join('')}</div>`;
 }
 
 function field(key, label, attrs = '', required = true) {
@@ -470,6 +482,8 @@ async function loadCatalog() {
     state.categories = catalog.categories;
     state.products = catalog.products;
     state.saved = catalog.saved || {};
+    /* prices or ordering rules may have changed since the cart was filled */
+    Object.keys(state.cart).forEach((id) => { if (byId(id)?.orderable) state.cart[id] = fitQty(byId(id), state.cart[id]); });
 }
 
 document.addEventListener('click', (e) => {
@@ -477,15 +491,15 @@ document.addEventListener('click', (e) => {
     if (link && tg?.openLink) { e.preventDefault(); tg.openLink(link.href); return; }
     const el = e.target.closest('button');
     if (!el) return;
-    if (el.dataset.inc) setQty(el.dataset.inc, (state.cart[el.dataset.inc] || 0) + 1);
-    else if (el.dataset.dec) setQty(el.dataset.dec, (state.cart[el.dataset.dec] || 0) - 1);
+    if (el.dataset.inc) setQty(el.dataset.inc, nextQty(byId(el.dataset.inc), state.cart[el.dataset.inc] || 0));
+    else if (el.dataset.dec) setQty(el.dataset.dec, prevQty(byId(el.dataset.dec), state.cart[el.dataset.dec] || 0));
     else if (el.dataset.cat) { state.category = ['all', 'mine'].includes(el.dataset.cat) ? el.dataset.cat : Number(el.dataset.cat); render(); }
     else if (el.dataset.save) toggleSaved(el.dataset.save);
     else if (el.hasAttribute('data-add-list')) addToCart(Object.fromEntries(Object.entries(state.saved).filter(([id]) => byId(id)?.orderable)));
     else if (el.hasAttribute('data-save-cart')) saveToList(Object.fromEntries(cartLines().map((l) => [l.product.id, l.qty]))).then((ok) => ok && flash(L.listSaved));
     else if (el.dataset.repeat) {
         const order = state.orders.find((o) => o.number === el.dataset.repeat);
-        addToCart(Object.fromEntries(order.items.filter((i) => byId(i.product_id)?.orderable).map((i) => [i.product_id, i.quantity])));
+        addToCart(Object.fromEntries(order.items.filter((i) => repeatable(order, i)).map((i) => [i.product_id, i.quantity])));
     }
     else if (el.dataset.tab) { state.tab = el.dataset.tab; state.view = null; state.errors = {}; render(); window.scrollTo(0, 0); }
     else if (el.dataset.go === 'register') { state.view = 'register'; state.errors = {}; resetLocationForm(); render(); window.scrollTo(0, 0); }
