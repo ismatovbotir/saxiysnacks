@@ -1,0 +1,123 @@
+@import 'tailwindcss' source(none);
+
+@source '../views/storefront';
+@source '../views/components/storefront';
+@source '../js/storefront.js';
+
+/*
+ * SAXIY brand palette. Surface colors switch with the visitor's light/dark preference,
+ * so `bg-paper`, `text-ink`, etc. need no `dark:` variants.
+ */
+:root {
+    --paper: #f7faf3;
+    --surface: #ffffff;
+    --ink: #1b2616;
+    --muted: #5b6754;
+    --line: #dde5d3;
+    --tint: #eaf3e1;
+    --sun: #fff1d2;
+    --sky: #e5eefa;
+    --peach: #fbebd3;
+    --leaf-ink: #1e7a3c;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --paper: #11170e;
+        --surface: #182212;
+        --ink: #eef4e6;
+        --muted: #a3b098;
+        --line: #2b3823;
+        --tint: #1d2a16;
+        --sun: #33280c;
+        --sky: #15243a;
+        --peach: #33240f;
+        --leaf-ink: #5ccb80;
+    }
+}
+
+@theme inline {
+    --color-paper: var(--paper);
+    --color-surface: var(--surface);
+    --color-ink: var(--ink);
+    --color-muted: var(--muted);
+    --color-line: var(--line);
+    --color-tint: var(--tint);
+    --color-sun: var(--sun);
+    --color-sky: var(--sky);
+    --color-peach: var(--peach);
+    --color-leaf-ink: var(--leaf-ink);
+}
+
+@theme {
+    --color-brand: #f59b00;
+    --color-brand-light: #ffae1f;
+    --color-leaf: #2fa354;
+    --color-leaf-dark: #1e7a3c;
+    --color-night: #1b2616;
+    --color-telegram: #229ed9;
+    --color-telegram-dark: #1b86b8;
+    --font-sans: 'Onest', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+    --font-display: 'Unbounded', 'Arial Black', ui-sans-serif, system-ui, sans-serif;
+    --font-wordmark: 'Times New Roman', Georgia, serif;
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    h1,
+    h2,
+    h3 {
+        @apply font-display leading-[1.12] font-semibold tracking-tight;
+    }
+
+    :focus-visible {
+        @apply rounded-md outline-3 outline-offset-3 outline-brand;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        ::before,
+        ::after {
+            transition: none !important;
+            scroll-behavior: auto !important;
+        }
+    }
+}
+
+/* Shared by Blade views and the HTML the cart script renders. */
+@layer components {
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-transparent px-5 py-3 text-center font-bold transition-colors;
+    }
+
+    .btn-sm {
+        @apply px-4 py-2 text-sm;
+    }
+
+    .btn-primary {
+        @apply bg-brand text-night hover:bg-brand-light;
+    }
+
+    .btn-leaf {
+        @apply bg-leaf text-white hover:bg-leaf-dark;
+    }
+
+    .btn-telegram {
+        @apply bg-telegram text-white hover:bg-telegram-dark;
+    }
+
+    .btn-outline {
+        @apply border-ink hover:bg-ink hover:text-paper;
+    }
+
+    .chip {
+        @apply shrink-0 rounded-full border-[1.5px] border-line bg-surface px-3.5 py-1.5 text-sm font-semibold whitespace-nowrap aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-paper aria-[current=page]:border-ink aria-[current=page]:bg-ink aria-[current=page]:text-paper;
+    }
+
+    .field {
+        @apply w-full rounded-xl border-[1.5px] border-line bg-paper px-3.5 py-3 text-base text-ink outline-none focus:border-leaf;
+    }
+}

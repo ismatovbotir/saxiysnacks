@@ -112,6 +112,22 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Default Admin
+    |--------------------------------------------------------------------------
+    |
+    | The admin panel account created by `php artisan db:seed`. Leave the
+    | password empty to skip it and use `php artisan admin:create` instead.
+    |
+    */
+
+    'default_admin' => [
+        'name' => env('ADMIN_NAME', 'Admin'),
+        'email' => env('ADMIN_EMAIL'),
+        'password' => env('ADMIN_PASSWORD'),
+    ],
+
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
 ];

@@ -4,6 +4,30 @@
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    --font-sans: 'Onest', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+    --color-brand: #f59b00;
+    --color-brand-dark: #b86f00;
+    --color-leaf: #2fa354;
+    --color-leaf-dark: #1e7a3c;
+    --color-ink: #1b2616;
+    --color-paper: #f7faf3;
+}
+
+@layer components {
+    .admin-input {
+        @apply w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm shadow-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/30;
+    }
+
+    .admin-btn {
+        @apply inline-flex items-center justify-center gap-2 rounded-full bg-ink px-4 py-2 text-sm font-semibold text-white hover:bg-ink/85;
+    }
+
+    .admin-btn-outline {
+        @apply inline-flex items-center justify-center gap-2 rounded-full border border-black/15 bg-white px-4 py-2 text-sm font-semibold hover:bg-black/5;
+    }
+
+    .admin-card {
+        @apply rounded-xl border border-black/10 bg-white;
+    }
 }

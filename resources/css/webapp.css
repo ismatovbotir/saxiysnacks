@@ -1,0 +1,27 @@
+@import 'tailwindcss' source(none);
+
+@source '../js/webapp.js';
+@source '../views/webapp.blade.php';
+
+/*
+ * Telegram Mini App theme: colors follow the user's Telegram theme (light/dark) with SAXIY fallbacks.
+ * @see https://core.telegram.org/bots/webapps#themeparams
+ */
+@theme {
+    --color-tg-bg: var(--tg-theme-bg-color, #f7faf3);
+    --color-tg-surface: var(--tg-theme-section-bg-color, var(--tg-theme-secondary-bg-color, #ffffff));
+    --color-tg-text: var(--tg-theme-text-color, #1b2616);
+    --color-tg-hint: var(--tg-theme-hint-color, #5b6754);
+    --color-tg-link: var(--tg-theme-link-color, #1e7a3c);
+    --color-tg-button: var(--tg-theme-button-color, #2fa354);
+    --color-tg-button-text: var(--tg-theme-button-text-color, #ffffff);
+    --color-tg-danger: var(--tg-theme-destructive-text-color, #c0392b);
+    --color-brand: #f59b00;
+}
+
+@layer base {
+    body {
+        @apply bg-tg-bg text-tg-text antialiased;
+        font-family: -apple-system, system-ui, 'Segoe UI', Roboto, sans-serif;
+    }
+}
