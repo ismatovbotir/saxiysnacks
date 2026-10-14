@@ -4,6 +4,7 @@ namespace App\Services\Telegram;
 
 use App\Enums\OrderStatus;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\TelegramClient;
 use App\Support\Maps;
 use App\Support\Money;
@@ -16,6 +17,13 @@ use Illuminate\Support\Str;
  */
 class AdminChatMessages
 {
+    private const string TIMEZONE = 'Asia/Tashkent';
+
+    /**
+     * Telegram allows 4096 characters per message after entities are parsed; keep some headroom.
+     */
+    private const int MESSAGE_LIMIT = 3900;
+
     public function clientText(TelegramClient $client): string
     {
         $username = $client->telegram_username ? ' (@'.e($client->telegram_username).')' : '';
@@ -51,34 +59,75 @@ class AdminChatMessages
         return ['inline_keyboard' => $this->withAdminLink([$row], route('admin.clients.show', $client))];
     }
 
+    /**
+     * Full order sheet for the admin chat: customer card, delivery, every line with boxes and pieces, and totals.
+     * Long orders are shortened to fit Telegram's message limit; the admin panel link shows the rest.
+     */
     public function orderText(Order $order): string
     {
-        $order->loadMissing(['client', 'items']);
+        $order->loadMissing(['client', 'items.product']);
+        $client = $order->client;
 
-        $lines = $order->items->map(fn ($item): string => sprintf(
-            '• %s, %d g — %d × %s = %s',
-            e($item->product_name),
-            $item->weight_grams,
-            $item->quantity,
-            Money::format($item->unit_price),
-            Money::format($item->line_total),
-        ));
+        $previousOrders = $client->orders()->whereKeyNot($order->getKey())->count();
+        $boxes = $order->items->sum('quantity');
+        $pieces = $order->items->sum(fn (OrderItem $item): int => $item->quantity * ($item->box_quantity ?? 0));
+        $kilograms = $order->items->sum(fn (OrderItem $item): int => $item->quantity * ($item->box_quantity ?? 0) * $item->weight_grams) / 1000;
 
-        return implode("\n", array_filter([
+        $items = $order->items->values()->map(fn (OrderItem $item, int $index): string => implode("\n", array_filter([
+            ($index + 1).'. <b>'.e($item->product_name).'</b>, '.$item->weight_grams.' g'.($item->product?->sku ? ' · <code>'.e($item->product->sku).'</code>' : ''),
+            '    '.$item->quantity.' box'.($item->quantity === 1 ? '' : 'es')
+                .($item->box_quantity ? ' × '.$item->box_quantity.' pcs = '.number_format($item->quantity * $item->box_quantity, 0, '.', ' ').' pcs' : ''),
+            '    '.Money::format($item->unit_price).' / box → <b>'.Money::format($item->line_total).'</b>',
+        ])));
+
+        $header = [
             "<b>🧾 Order {$order->number()}</b>",
+            '🕐 '.$order->created_at->timezone(self::TIMEZONE)->format('d.m.Y H:i').' (Tashkent)',
             '',
-            '<b>Customer:</b> '.e($order->client->displayName()).($order->client->vat_number ? ' (VAT '.e($order->client->vat_number).')' : ''),
-            '<b>Contact:</b> '.e($order->client->fullName()).', '.e($order->client->phone),
-            '<b>Prices:</b> '.$order->price_type->emoji().' '.$order->price_type->label(),
-            '<b>Delivery:</b> '.$this->mapLinks($order->delivery_latitude, $order->delivery_longitude, $order->delivery_address),
+            '<b>👤 Customer</b>',
+            '<a href="tg://user?id='.$client->telegram_id.'">'.e($client->fullName()).'</a>'.($client->telegram_username ? ' (@'.e($client->telegram_username).')' : ''),
+            '📞 '.e($client->phone),
+            $client->company_name ? '🏢 '.e($client->company_name).($client->vat_number ? ' · VAT '.e($client->vat_number) : '') : null,
+            $client->company_name === null && $client->vat_number ? '🏢 VAT '.e($client->vat_number) : null,
+            $order->price_type->emoji().' '.$order->price_type->label().' prices · '.($previousOrders === 0 ? '🆕 first order' : "🔁 {$previousOrders} earlier order".($previousOrders === 1 ? '' : 's')),
             '',
-            $lines->implode("\n"),
+            '<b>📍 Delivery</b>',
+            $order->delivery_address ? e($order->delivery_address) : null,
+            $this->mapLinks($order->delivery_latitude, $order->delivery_longitude, null),
             '',
-            '<b>Total:</b> '.Money::format($order->total),
-            $order->comment ? '<b>Comment:</b> '.e(Str::limit($order->comment, 500)) : null,
+            '<b>📦 Items</b> ('.$order->items->count().' product'.($order->items->count() === 1 ? '' : 's').')',
+        ];
+
+        $footer = [
+            '',
+            '<b>Boxes:</b> '.$boxes.($pieces > 0 ? ' · <b>Pieces:</b> '.number_format($pieces, 0, '.', ' ') : '').($kilograms > 0 ? ' · <b>Weight:</b> ≈'.rtrim(rtrim(number_format($kilograms, 2, '.', ''), '0'), '.').' kg' : ''),
+            '<b>💰 Total: '.Money::format($order->total).'</b>',
+            $order->comment ? "\n<b>💬 Comment:</b>\n".e(Str::limit($order->comment, 800)) : null,
             '',
             '<b>Status:</b> '.$order->status->emoji().' '.$order->status->label(),
-        ], fn (?string $line): bool => $line !== null));
+        ];
+
+        $shown = $items->count();
+
+        do {
+            $body = $items->take($shown)->implode("\n");
+
+            if ($shown < $items->count()) {
+                $body .= "\n… and ".($items->count() - $shown).' more — see the admin panel';
+            }
+
+            $text = $this->lines([...$header, $body, ...$footer]);
+        } while (mb_strlen(strip_tags($text)) > self::MESSAGE_LIMIT && --$shown > 0);
+
+        return $text;
+    }
+
+    /**
+     * @param  array<int, string|null>  $lines
+     */
+    private function lines(array $lines): string
+    {
+        return implode("\n", array_filter($lines, fn (?string $line): bool => $line !== null));
     }
 
     /**
