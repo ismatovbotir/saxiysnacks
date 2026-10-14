@@ -12,13 +12,13 @@ enum OrderStatus: string
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::New => 'New',
             self::Confirmed => 'Confirmed',
             self::Shipped => 'Shipped',
             self::Completed => 'Completed',
             self::Cancelled => 'Cancelled',
-        };
+        });
     }
 
     public function emoji(): string

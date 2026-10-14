@@ -23,6 +23,8 @@ const T = {
         locationFailed: 'Joylashuvni olib bo\'lmadi. Ruxsat bering yoki uni bot chatida yuboring: 📎 → Joylashuv.', openSettings: 'Sozlamalarni ochish',
         status: { new: 'Yangi', confirmed: 'Tasdiqlangan', shipped: 'Jo\'natilgan', completed: 'Bajarilgan', cancelled: 'Bekor qilingan' },
         profileStatus: { active: 'Faol', blocked: 'Bloklangan' }, profileType: { consumer: 'Chakana narxlar', reseller: 'Diler narxlari' }, prices: 'Narxlar',
+        myList: '⭐ Sevimlilar', saveToList: 'Sevimlilarga qo\'shish', removeFromList: 'Sevimlilardan olib tashlash', addAllToCart: 'Hammasini savatga qo\'shish',
+        saveCartToList: '⭐ Savatni sevimlilarga saqlash', listSaved: 'Sevimlilarga saqlandi', listEmpty: 'Sevimlilar hozircha bo\'sh. Keyingi buyurtmalar uchun mahsulotdagi ☆ tugmasini bosing.', usualQty: 'odatda', repeatOrder: '🔁 Buyurtmani takrorlash', addedToCart: 'Savatga qo\'shildi',
     },
     ru: {
         catalog: 'Каталог', cart: 'Корзина', orders: 'Заказы', profile: 'Профиль', all: 'Все', g: 'г', pcs: 'шт.',
@@ -41,6 +43,8 @@ const T = {
         locationFailed: 'Не удалось получить локацию. Разрешите доступ или отправьте её в чат с ботом: 📎 → Геопозиция.', openSettings: 'Открыть настройки',
         status: { new: 'Новый', confirmed: 'Подтверждён', shipped: 'Отправлен', completed: 'Выполнен', cancelled: 'Отменён' },
         profileStatus: { active: 'Активен', blocked: 'Заблокирован' }, profileType: { consumer: 'Розничные цены', reseller: 'Цены для реселлеров' }, prices: 'Цены',
+        myList: '⭐ Избранное', saveToList: 'Добавить в избранное', removeFromList: 'Убрать из избранного', addAllToCart: 'Добавить всё в корзину',
+        saveCartToList: '⭐ Сохранить корзину в избранное', listSaved: 'Сохранено в избранное', listEmpty: 'В избранном пока пусто. Нажмите ☆ на товаре, чтобы быстро заказывать его в следующий раз.', usualQty: 'обычно', repeatOrder: '🔁 Повторить заказ', addedToCart: 'Добавлено в корзину',
     },
     en: {
         catalog: 'Catalog', cart: 'Cart', orders: 'Orders', profile: 'Profile', all: 'All', g: 'g', pcs: 'pcs',
@@ -59,6 +63,8 @@ const T = {
         locationFailed: 'Could not get your location. Allow access, or send it in the bot chat: 📎 → Location.', openSettings: 'Open settings',
         status: { new: 'New', confirmed: 'Confirmed', shipped: 'Shipped', completed: 'Completed', cancelled: 'Cancelled' },
         profileStatus: { active: 'Active', blocked: 'Blocked' }, profileType: { consumer: 'Consumer prices', reseller: 'Reseller prices' }, prices: 'Prices',
+        myList: '⭐ Favorites', saveToList: 'Add to favorites', removeFromList: 'Remove from favorites', addAllToCart: 'Add all to cart',
+        saveCartToList: '⭐ Save cart to favorites', listSaved: 'Saved to favorites', listEmpty: 'No favorites yet. Tap ☆ on a product to reorder it quickly next time.', usualQty: 'usually', repeatOrder: '🔁 Repeat order', addedToCart: 'Added to cart',
     },
 };
 
@@ -68,7 +74,7 @@ const L = T[lang];
 document.documentElement.lang = lang;
 
 const state = {
-    profile: null, categories: [], products: [], orders: [], category: 'all', tab: 'catalog', view: null, cart: {}, comment: '', errors: {},
+    profile: null, categories: [], products: [], orders: [], saved: {}, notice: '', category: 'all', tab: 'catalog', view: null, cart: {}, comment: '', errors: {},
     /* location picked in the current form: { latitude, longitude } | 'saved' | null */
     pickedLocation: null, address: '', locating: false, locationError: false,
 };
@@ -180,6 +186,60 @@ function setQty(id, qty) {
     render();
 }
 
+/* ---------- my list (saved on the server, so it follows the customer to any device) ---------- */
+const isSaved = (id) => Boolean(state.saved[id]);
+
+function flash(message) {
+    state.notice = message;
+    tg?.HapticFeedback?.notificationOccurred('success');
+    render();
+    clearTimeout(flash.timer);
+    flash.timer = setTimeout(() => { state.notice = ''; render(); }, 2200);
+}
+
+async function saveToList(quantities) {
+    const previous = state.saved;
+    state.saved = { ...state.saved, ...quantities };
+    render();
+    try {
+        state.saved = (await api('saved', { method: 'POST', body: JSON.stringify({ items: Object.entries(quantities).map(([id, qty]) => ({ product_id: Number(id), quantity: qty })) }) })).saved;
+        return true;
+    } catch (error) {
+        state.saved = previous;
+        render();
+        return false;
+    }
+}
+
+async function toggleSaved(id) {
+    if (!isSaved(id)) {
+        if (await saveToList({ [id]: state.cart[id] || 1 })) flash(L.listSaved);
+        return;
+    }
+    const previous = state.saved;
+    const { [id]: removed, ...rest } = state.saved;
+    state.saved = rest;
+    tg?.HapticFeedback?.selectionChanged();
+    render();
+    try {
+        state.saved = (await api(`saved/${id}`, { method: 'DELETE' })).saved;
+    } catch (error) {
+        state.saved = previous;
+        render();
+    }
+}
+
+function addToCart(quantities) {
+    Object.entries(quantities).forEach(([id, qty]) => {
+        if (byId(id)?.orderable) state.cart[id] = (state.cart[id] || 0) + qty;
+    });
+    try { localStorage.setItem(cartKey, JSON.stringify(state.cart)); } catch (e) { /* storage unavailable */ }
+    state.tab = 'cart';
+    state.view = null;
+    flash(L.addedToCart);
+    window.scrollTo(0, 0);
+}
+
 const cartLines = () => Object.entries(state.cart).map(([id, qty]) => ({ product: byId(id), qty })).filter((l) => l.product?.orderable);
 const cartCount = () => cartLines().reduce((sum, l) => sum + l.qty, 0);
 const cartTotal = () => cartLines().reduce((sum, l) => sum + l.qty * l.product.price, 0);
@@ -215,17 +275,28 @@ function productCard(p) {
                ${qty ? stepper(p.id, qty) : `<button class="${ui.btn} py-2.5" data-inc="${p.id}">${esc(L.add)}</button>`}`
             : `<p class="mt-auto text-xs text-tg-hint">${esc(L.unavailable)}</p>`;
     }
+    const bookmark = isActive()
+        ? `<button data-save="${p.id}" aria-pressed="${isSaved(p.id)}" aria-label="${esc(isSaved(p.id) ? L.removeFromList : L.saveToList)}" class="absolute top-1.5 right-1.5 grid size-9 place-items-center rounded-full bg-tg-bg/85 text-lg shadow-sm active:scale-95 ${isSaved(p.id) ? 'text-brand' : 'text-tg-hint'}">${isSaved(p.id) ? '★' : '☆'}</button>`
+        : '';
     return `<article class="${ui.card} flex flex-col overflow-hidden">
-        <div class="grid aspect-square place-items-center bg-tg-button/5 p-2">${picture(p)}</div>
+        <div class="relative grid aspect-square place-items-center bg-tg-button/5 p-2">${picture(p)}${bookmark}</div>
         <div class="flex flex-1 flex-col gap-1.5 p-3"><h3 class="text-sm leading-snug font-semibold">${esc(name(p.name))}</h3>
-        <p class="${ui.hint}">${esc(p.weight)} ${esc(L.g)}${p.box_quantity ? ` · ${p.box_quantity} ${esc(L.pcs)}` : ''}</p>${foot}</div></article>`;
+        <p class="${ui.hint}">${esc(p.weight)} ${esc(L.g)}${p.box_quantity ? ` · ${p.box_quantity} ${esc(L.pcs)}` : ''}${state.category === 'mine' && state.saved[p.id] ? ` · ${esc(L.usualQty)} ${state.saved[p.id]} ${esc(L.perBox)}` : ''}</p>${foot}</div></article>`;
 }
 
 function viewCatalog() {
-    const list = state.products.filter((p) => state.category === 'all' || p.category_id === state.category);
+    const mine = state.category === 'mine';
+    const list = state.products.filter((p) => (mine ? isSaved(p.id) : state.category === 'all' || p.category_id === state.category));
     const chip = (key, label) => `<button data-cat="${key}" class="shrink-0 rounded-full px-3.5 py-1.5 text-sm font-semibold ${state.category === key ? 'bg-tg-text text-tg-bg' : 'bg-tg-surface'}">${esc(label)}</button>`;
-    return `${statusBanner()}
-        <div class="-mx-3 mb-3 flex gap-2 overflow-x-auto px-3 pb-1 [scrollbar-width:none] sm:-mx-4 sm:px-4">${chip('all', L.all)}${state.categories.map((c) => chip(c.id, name(c.name))).join('')}</div>
+    const orderableSaved = list.filter((p) => p.orderable);
+    const listBar = mine && orderableSaved.length
+        ? `<button class="${ui.btn} mb-3" data-add-list>${esc(L.addAllToCart)} · ${money(orderableSaved.reduce((sum, p) => sum + p.price * state.saved[p.id], 0))}</button>`
+        : '';
+    const favorites = isActive() ? chip('mine', `${L.myList}${Object.keys(state.saved).length ? ` · ${Object.keys(state.saved).length}` : ''}`) : '';
+    return `<div class="sticky top-0 z-20 -mx-3 -mt-3 mb-3 flex gap-2 overflow-x-auto bg-tg-bg/95 px-3 py-2.5 shadow-[0_1px_0] shadow-tg-text/10 [scrollbar-width:none] sm:-mx-4 sm:px-4">${favorites}${chip('all', L.all)}${state.categories.map((c) => chip(c.id, name(c.name))).join('')}</div>
+        ${statusBanner()}
+        ${listBar}
+        ${mine && !list.length ? `<p class="py-12 text-center text-sm text-tg-hint">${esc(L.listEmpty)}</p>` : ''}
         <div class="grid grid-cols-2 gap-2.5 sm:grid-cols-3">${list.map(productCard).join('')}</div>`;
 }
 
@@ -243,6 +314,7 @@ function viewCart() {
         <div class="${ui.card} divide-y divide-tg-text/10">${lines.map(({ product: p, qty }) => `<div class="flex items-center gap-3 p-3">
             <div class="min-w-0 flex-1"><b class="block truncate text-sm">${esc(name(p.name))}</b><span class="${ui.hint}">${esc(p.weight)} ${esc(L.g)} · ${money(p.price)} × ${qty}</span></div>
             ${stepper(p.id, qty, 'w-32 shrink-0')}</div>`).join('')}</div>
+        <button class="mt-2 w-full rounded-xl px-4 py-2 text-sm font-semibold text-tg-link active:bg-tg-text/5" data-save-cart>${esc(L.saveCartToList)}</button>
         <div class="flex justify-between px-1 py-4 text-lg font-bold"><span>${esc(L.total)}</span><span>${money(cartTotal())}</span></div>
         <section class="grid gap-3">${delivery}
             <label class="${ui.label}"><span>${esc(L.comment)} <span class="${ui.hint}">(${esc(L.optional)})</span></span><textarea id="comment" rows="2" maxlength="1000" class="${ui.input}">${esc(state.comment)}</textarea></label>
@@ -258,7 +330,8 @@ function viewOrders() {
         <div class="flex items-center justify-between gap-2"><b>${esc(o.number)}</b>${badge(o.status)}</div>
         <p class="${ui.hint} mt-1">${new Date(o.created_at).toLocaleString(lang)} · <b class="text-tg-text">${money(o.total)}</b></p>
         <p class="mt-2">${o.items.map((i) => `${esc(i.name)} ${i.weight_grams} ${esc(L.g)} × ${i.quantity}`).join(', ')}</p>
-        <a href="${esc(mapUrl(o.delivery))}" data-link class="mt-2 inline-block text-tg-link underline">📍 ${esc(o.delivery.address || L.viewOnMap)}</a></article>`).join('')}</div>`;
+        <a href="${esc(mapUrl(o.delivery))}" data-link class="mt-2 inline-block text-tg-link underline">📍 ${esc(o.delivery.address || L.viewOnMap)}</a>
+        ${o.items.some((i) => byId(i.product_id)?.orderable) ? `<button class="${ui.btnGhost} mt-3 py-2.5" data-repeat="${esc(o.number)}">${esc(L.repeatOrder)}</button>` : ''}</article>`).join('')}</div>`;
 }
 
 function field(key, label, attrs = '', required = true) {
@@ -317,7 +390,8 @@ function renderMainButton() {
 
 function render() {
     const views = { catalog: viewCatalog, cart: viewCart, orders: viewOrders, profile: viewProfile };
-    app.innerHTML = state.view === 'register' ? viewRegister() : views[state.tab]();
+    app.innerHTML = (state.view === 'register' ? viewRegister() : views[state.tab]())
+        + (state.notice ? `<div role="status" class="fixed inset-x-3 bottom-24 z-30 mx-auto max-w-sm rounded-xl bg-tg-text px-4 py-3 text-center text-sm font-semibold text-tg-bg shadow-lg">✓ ${esc(state.notice)}</div>` : '');
     renderPacks(app);
     renderTabs();
     renderMainButton();
@@ -395,6 +469,7 @@ async function loadCatalog() {
     const catalog = await api('catalog');
     state.categories = catalog.categories;
     state.products = catalog.products;
+    state.saved = catalog.saved || {};
 }
 
 document.addEventListener('click', (e) => {
@@ -404,7 +479,14 @@ document.addEventListener('click', (e) => {
     if (!el) return;
     if (el.dataset.inc) setQty(el.dataset.inc, (state.cart[el.dataset.inc] || 0) + 1);
     else if (el.dataset.dec) setQty(el.dataset.dec, (state.cart[el.dataset.dec] || 0) - 1);
-    else if (el.dataset.cat) { state.category = el.dataset.cat === 'all' ? 'all' : Number(el.dataset.cat); render(); }
+    else if (el.dataset.cat) { state.category = ['all', 'mine'].includes(el.dataset.cat) ? el.dataset.cat : Number(el.dataset.cat); render(); }
+    else if (el.dataset.save) toggleSaved(el.dataset.save);
+    else if (el.hasAttribute('data-add-list')) addToCart(Object.fromEntries(Object.entries(state.saved).filter(([id]) => byId(id)?.orderable)));
+    else if (el.hasAttribute('data-save-cart')) saveToList(Object.fromEntries(cartLines().map((l) => [l.product.id, l.qty]))).then((ok) => ok && flash(L.listSaved));
+    else if (el.dataset.repeat) {
+        const order = state.orders.find((o) => o.number === el.dataset.repeat);
+        addToCart(Object.fromEntries(order.items.filter((i) => byId(i.product_id)?.orderable).map((i) => [i.product_id, i.quantity])));
+    }
     else if (el.dataset.tab) { state.tab = el.dataset.tab; state.view = null; state.errors = {}; render(); window.scrollTo(0, 0); }
     else if (el.dataset.go === 'register') { state.view = 'register'; state.errors = {}; resetLocationForm(); render(); window.scrollTo(0, 0); }
     else if (el.dataset.go === 'back') { state.view = null; state.errors = {}; render(); }

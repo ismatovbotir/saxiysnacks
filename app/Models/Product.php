@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 
 #[Fillable([
-    'category_id', 'sku', 'name', 'description', 'weight_grams', 'box_quantity', 'consumer_price', 'reseller_price',
+    'category_id', 'sku', 'gtin', 'class_code', 'package_code', 'name', 'description', 'weight_grams', 'box_quantity', 'consumer_price', 'reseller_price',
     'illustration', 'image_path', 'is_featured', 'is_new', 'is_active', 'sort_order',
 ])]
 class Product extends Model

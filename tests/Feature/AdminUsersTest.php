@@ -17,7 +17,7 @@ class AdminUsersTest extends TestCase
     {
         parent::setUp();
 
-        $this->admin = User::factory()->create(['email' => 'admin@saxiy.uz']);
+        $this->admin = User::factory()->create(['email' => 'admin@saxiy.uz', 'locale' => 'en']);
         $this->actingAs($this->admin);
     }
 

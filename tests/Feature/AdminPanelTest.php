@@ -30,7 +30,7 @@ class AdminPanelTest extends TestCase
         parent::setUp();
 
         $this->configureTelegram();
-        $this->admin = User::factory()->create(['email' => 'admin@saxiy.uz', 'password' => 'secret-password']);
+        $this->admin = User::factory()->create(['email' => 'admin@saxiy.uz', 'password' => 'secret-password', 'locale' => 'en']);
     }
 
     public function test_guests_are_redirected_to_the_login_page(): void
@@ -46,7 +46,7 @@ class AdminPanelTest extends TestCase
     public function test_admins_can_log_in_and_out(): void
     {
         $this->post(route('admin.login.store'), ['email' => 'admin@saxiy.uz', 'password' => 'wrong'])
-            ->assertSessionHasErrors(['email' => 'These credentials do not match our records.']);
+            ->assertSessionHasErrors(['email' => "Email yoki parol noto'g'ri."]);
         $this->assertGuest();
 
         $this->post(route('admin.login.store'), ['email' => 'admin@saxiy.uz', 'password' => 'secret-password'])
@@ -102,6 +102,19 @@ class AdminPanelTest extends TestCase
         ] as $url) {
             $this->get($url)->assertOk();
         }
+    }
+
+    public function test_the_menu_is_grouped_by_business_area_with_a_new_orders_badge(): void
+    {
+        Order::factory()->count(3)->create(['status' => OrderStatus::New]);
+        Order::factory()->create(['status' => OrderStatus::Completed]);
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.orders.index'))
+            ->assertOk()
+            ->assertSeeInOrder(['Sales', 'Dashboard', 'Orders', 'Customers', 'Catalog', 'Products', 'Categories', 'Settings', 'Contacts &amp; social', 'Telegram bot', 'Admins'], false)
+            ->assertSee('<span class="rounded-full bg-brand px-2 py-0.5 text-xs font-bold text-ink" title="Needs attention">3</span>', false)
+            ->assertSee('aria-current="page"', false);
     }
 
     public function test_creating_a_category_generates_its_slug(): void

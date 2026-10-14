@@ -26,7 +26,7 @@ class CategoryController extends Controller
     {
         Category::create($request->validated());
 
-        return redirect()->route('admin.categories.index')->with('status', 'Category created.');
+        return redirect()->route('admin.categories.index')->with('status', __('Category created.'));
     }
 
     public function edit(Category $category): View
@@ -38,17 +38,17 @@ class CategoryController extends Controller
     {
         $category->update($request->validated());
 
-        return redirect()->route('admin.categories.index')->with('status', 'Category updated.');
+        return redirect()->route('admin.categories.index')->with('status', __('Category updated.'));
     }
 
     public function destroy(Category $category): RedirectResponse
     {
         if ($category->products()->exists()) {
-            return back()->with('error', 'Move or delete the products in this category first.');
+            return back()->with('error', __('Move or delete the products in this category first.'));
         }
 
         $category->delete();
 
-        return redirect()->route('admin.categories.index')->with('status', 'Category deleted.');
+        return redirect()->route('admin.categories.index')->with('status', __('Category deleted.'));
     }
 }

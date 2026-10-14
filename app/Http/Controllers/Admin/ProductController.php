@@ -46,7 +46,7 @@ class ProductController extends Controller
     {
         Product::create($this->attributes($request));
 
-        return redirect()->route('admin.products.index')->with('status', 'Product created.');
+        return redirect()->route('admin.products.index')->with('status', __('Product created.'));
     }
 
     public function edit(Product $product): View
@@ -61,7 +61,7 @@ class ProductController extends Controller
     {
         $product->update($this->attributes($request, $product));
 
-        return redirect()->route('admin.products.index')->with('status', 'Product updated.');
+        return redirect()->route('admin.products.index')->with('status', __('Product updated.'));
     }
 
     public function destroy(Product $product): RedirectResponse
@@ -72,7 +72,7 @@ class ProductController extends Controller
             Storage::disk('public')->delete($product->image_path);
         }
 
-        return redirect()->route('admin.products.index')->with('status', 'Product deleted.');
+        return redirect()->route('admin.products.index')->with('status', __('Product deleted.'));
     }
 
     /**

@@ -23,7 +23,7 @@ enum ProductIllustration: string
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::KurtBalls => 'Kurt balls',
             self::KurtBallsMix => 'Kurt balls, assorted',
             self::KurtBallsBerry => 'Kurt balls, berry',
@@ -36,6 +36,6 @@ enum ProductIllustration: string
             self::Pistachio => 'Nuts: pistachio',
             self::ApricotKernels => 'Nuts: apricot kernels',
             self::CheeseSticks => 'Cheese sticks (suluguni)',
-        };
+        });
     }
 }

@@ -74,7 +74,8 @@ class AdminChatMessages
         $kilograms = $order->items->sum(fn (OrderItem $item): int => $item->quantity * ($item->box_quantity ?? 0) * $item->weight_grams) / 1000;
 
         $items = $order->items->values()->map(fn (OrderItem $item, int $index): string => implode("\n", array_filter([
-            ($index + 1).'. <b>'.e($item->product_name).'</b>, '.$item->weight_grams.' g'.($item->product?->sku ? ' · <code>'.e($item->product->sku).'</code>' : ''),
+            ($index + 1).'. <b>'.e($item->product_name).'</b>, '.$item->weight_grams.' g'.($item->product?->sku ? ' · <code>'.e($item->product->sku).'</code>' : '')
+                .($item->product?->class_code ? ' · MXIK <code>'.e($item->product->class_code).'</code>' : ''),
             '    '.$item->quantity.' box'.($item->quantity === 1 ? '' : 'es')
                 .($item->box_quantity ? ' × '.$item->box_quantity.' pcs = '.number_format($item->quantity * $item->box_quantity, 0, '.', ' ').' pcs' : ''),
             '    '.Money::format($item->unit_price).' / box → <b>'.Money::format($item->line_total).'</b>',

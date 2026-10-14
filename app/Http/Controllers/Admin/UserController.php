@@ -25,7 +25,7 @@ class UserController extends Controller
     {
         User::create($request->validated());
 
-        return redirect()->route('admin.users.index')->with('status', 'Admin created.');
+        return redirect()->route('admin.users.index')->with('status', __('Admin created.'));
     }
 
     public function edit(User $user): View
@@ -37,17 +37,17 @@ class UserController extends Controller
     {
         $user->update(array_filter($request->validated(), fn (mixed $value): bool => $value !== null));
 
-        return redirect()->route('admin.users.index')->with('status', 'Admin updated.');
+        return redirect()->route('admin.users.index')->with('status', __('Admin updated.'));
     }
 
     public function destroy(Request $request, User $user): RedirectResponse
     {
         if ($request->user()->is($user)) {
-            return back()->with('error', 'You cannot delete your own account.');
+            return back()->with('error', __('You cannot delete your own account.'));
         }
 
         $user->delete();
 
-        return redirect()->route('admin.users.index')->with('status', 'Admin deleted.');
+        return redirect()->route('admin.users.index')->with('status', __('Admin deleted.'));
     }
 }

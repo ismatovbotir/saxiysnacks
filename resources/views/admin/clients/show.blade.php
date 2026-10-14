@@ -1,47 +1,62 @@
 <x-admin.layout :title="$client->displayName()">
-    <x-admin.page-header :title="$client->displayName()">
+    <x-admin.page-header :title="$client->displayName()" :subtitle="__('Customer since :date', ['date' => $client->created_at->format('d.m.Y')]).' · '.trans_choice(':count order|:count orders', $orders->count()).($orders->count() === 20 ? '+' : '')">
         <x-admin.status-badge :status="$client->type" />
         <x-admin.status-badge :status="$client->status" />
-        @include('admin.clients.partials.actions')
     </x-admin.page-header>
 
-    <div class="grid gap-6 lg:grid-cols-3">
-        <section class="admin-card p-5">
-            <dl class="space-y-3 text-sm">
-                @foreach ([
-                    'Name' => $client->fullName(),
-                    'Company' => $client->company_name ?? '—',
-                    'VAT number' => $client->vat_number ?? '—',
-                    'Prices' => $client->type->label(),
-                    'Phone' => $client->phone,
-                    'Telegram' => ($client->telegram_username ? '@'.$client->telegram_username.' · ' : '').'ID '.$client->telegram_id,
-                    'Language' => strtoupper($client->language_code),
-                    'Registered' => $client->created_at->format('d.m.Y H:i'),
-                ] as $label => $value)
-                    <div><dt class="text-black/50">{{ $label }}</dt><dd class="font-medium">{{ $value }}</dd></div>
-                @endforeach
-            </dl>
-            <h3 class="mt-5 mb-2 text-sm text-black/50">Delivery location{{ $client->location_updated_at ? ' · updated '.$client->location_updated_at->format('d.m.Y') : '' }}</h3>
-            <x-admin.location :latitude="$client->latitude" :longitude="$client->longitude" :address="$client->address" />
-            @if ($client->telegram_username)
-                <a href="https://t.me/{{ $client->telegram_username }}" target="_blank" rel="noopener" class="admin-btn-outline mt-4">Message in Telegram ↗</a>
-            @endif
-        </section>
+    <div class="grid gap-4 lg:grid-cols-3 lg:gap-6">
+        <aside class="space-y-4 lg:order-last lg:space-y-6">
+            <section class="admin-card p-4 sm:p-5">
+                <h2 class="mb-3 font-semibold">{{ __('Actions') }}</h2>
+                @include('admin.clients.partials.actions')
+                <div class="mt-3 grid grid-cols-2 gap-2">
+                    <a href="tel:{{ $client->phone }}" class="admin-btn-outline"><x-admin.icon name="phone" class="size-4" /> {{ __('Call') }}</a>
+                    @if ($client->telegram_username)
+                        <a href="https://t.me/{{ $client->telegram_username }}" target="_blank" rel="noopener" class="admin-btn-outline"><x-admin.icon name="send" class="size-4" /> {{ __('Message in Telegram') }} ↗</a>
+                    @endif
+                </div>
+            </section>
 
-        <section class="admin-card lg:col-span-2">
-            <h2 class="border-b border-black/10 px-5 py-3 font-semibold">Orders</h2>
-            <ul class="divide-y divide-black/5">
-                @forelse ($orders as $order)
-                    <li>
-                        <a href="{{ route('admin.orders.show', $order) }}" class="flex items-center justify-between px-5 py-3 hover:bg-black/2">
-                            <span><span class="font-semibold">{{ $order->number() }}</span> <span class="text-sm text-black/60">{{ $order->created_at->format('d.m.Y H:i') }}</span></span>
-                            <span class="flex items-center gap-3">{{ \App\Support\Money::format($order->total) }} <x-admin.status-badge :status="$order->status" /></span>
-                        </a>
-                    </li>
-                @empty
-                    <li class="px-5 py-6 text-sm text-black/50">No orders yet.</li>
-                @endforelse
-            </ul>
-        </section>
+            <section class="admin-card p-4 sm:p-5">
+                <h2 class="mb-3 font-semibold">{{ __('Details') }}</h2>
+                <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm lg:grid-cols-1">
+                    @foreach ([
+                        __('Name') => $client->fullName(),
+                        __('Phone') => $client->phone,
+                        __('Company') => $client->company_name ?? '—',
+                        __('VAT number') => $client->vat_number ?? '—',
+                        __('Prices') => $client->type->label(),
+                        'Telegram' => ($client->telegram_username ? '@'.$client->telegram_username.' · ' : '').'ID '.$client->telegram_id,
+                        __('Language') => strtoupper($client->language_code),
+                        __('Registered') => $client->created_at->format('d.m.Y H:i'),
+                    ] as $label => $value)
+                        <div class="min-w-0"><dt class="text-xs text-black/50">{{ $label }}</dt><dd class="font-medium break-words">{{ $value }}</dd></div>
+                    @endforeach
+                </dl>
+            </section>
+        </aside>
+
+        <div class="space-y-4 lg:col-span-2 lg:space-y-6">
+            <section class="admin-card p-4 sm:p-5">
+                <h2 class="mb-3 font-semibold">{{ __('Delivery location') }} <span class="text-sm font-normal text-black/50">{{ $client->location_updated_at ? '· '.__('updated :date', ['date' => $client->location_updated_at->format('d.m.Y')]) : '' }}</span></h2>
+                <x-admin.location :latitude="$client->latitude" :longitude="$client->longitude" :address="$client->address" />
+            </section>
+
+            <section class="admin-card">
+                <h2 class="border-b border-black/10 px-4 py-3 font-semibold sm:px-5">{{ __('Orders') }}</h2>
+                <ul class="divide-y divide-black/5">
+                    @forelse ($orders as $order)
+                        <li>
+                            <a href="{{ route('admin.orders.show', $order) }}" class="flex items-center justify-between gap-3 px-4 py-3 hover:bg-black/2 sm:px-5">
+                                <span class="min-w-0"><span class="font-semibold">{{ $order->number() }}</span> <span class="block text-sm text-black/60 sm:inline">{{ $order->created_at->format('d.m.Y H:i') }}</span></span>
+                                <span class="flex shrink-0 flex-col items-end gap-1 sm:flex-row sm:items-center sm:gap-3"><span class="font-semibold">{{ \App\Support\Money::format($order->total) }}</span> <x-admin.status-badge :status="$order->status" /></span>
+                            </a>
+                        </li>
+                    @empty
+                        <li class="px-5 py-8 text-center text-sm text-black/50">{{ __('No orders yet.') }}</li>
+                    @endforelse
+                </ul>
+            </section>
+        </div>
     </div>
 </x-admin.layout>

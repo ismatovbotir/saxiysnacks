@@ -28,11 +28,11 @@ class ConnectTelegramWebhook
     public function handle(): void
     {
         if (! $this->settings->isConfigured() || blank($this->settings->webhookSecret())) {
-            throw new RuntimeException('Connect the bot token first.');
+            throw new RuntimeException(__('Connect the bot token first.'));
         }
 
         if (! self::canConnect()) {
-            throw new RuntimeException('Telegram requires HTTPS, but the webhook address is '.self::webhookUrl().'. Set APP_URL to your public https:// domain.');
+            throw new RuntimeException(__('Telegram requires HTTPS, but the webhook address is :url. Set APP_URL to your public https:// domain.', ['url' => self::webhookUrl()]));
         }
 
         $bot = new TelegramBot($this->settings->botToken());

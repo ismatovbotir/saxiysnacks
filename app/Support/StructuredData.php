@@ -112,6 +112,7 @@ class StructuredData
             'description' => $product->translate('description') ?: null,
             'image' => $product->image_url,
             'sku' => $product->sku ?: $product->slug,
+            'gtin' => $product->gtin,
             'category' => $category->translate('name'),
             'brand' => ['@type' => 'Brand', 'name' => $this->settings->get('brand_name')],
             'manufacturer' => ['@id' => url('/').'#organization'],

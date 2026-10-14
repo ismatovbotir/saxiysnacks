@@ -30,6 +30,6 @@ class SettingsController extends Controller
 
         $settings->save($values);
 
-        return back()->with('status', 'Contacts and social links saved.');
+        return back()->with('status', __('Contacts and social links saved.'));
     }
 }

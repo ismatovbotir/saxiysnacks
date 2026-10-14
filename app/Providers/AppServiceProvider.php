@@ -6,6 +6,7 @@ use App\Services\Telegram\InitDataValidator;
 use App\Services\Telegram\TelegramBot;
 use App\Support\SiteSettings;
 use App\Support\TelegramSettings;
+use App\View\Composers\AdminNavigationComposer;
 use App\View\Composers\StorefrontComposer;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
@@ -28,6 +29,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->scoped(SiteSettings::class);
         $this->app->scoped(StorefrontComposer::class);
+        $this->app->scoped(AdminNavigationComposer::class);
 
         $this->app->scoped(InitDataValidator::class, fn (): InitDataValidator => new InitDataValidator(
             $this->app->make(TelegramSettings::class)->botToken(),
@@ -43,8 +45,12 @@ class AppServiceProvider extends ServiceProvider
         Model::preventLazyLoading(! $this->app->isProduction());
 
         View::composer(['storefront.*', 'components.storefront.*'], StorefrontComposer::class);
+        View::composer(['components.admin.layout', 'components.admin.page-header'], AdminNavigationComposer::class);
 
         RateLimiter::for('webapp-writes', fn (Request $request): Limit => Limit::perMinute(10)
+            ->by('tg:'.($request->attributes->get('telegram_user')['id'] ?? $request->ip())));
+
+        RateLimiter::for('webapp-list', fn (Request $request): Limit => Limit::perMinute(60)
             ->by('tg:'.($request->attributes->get('telegram_user')['id'] ?? $request->ip())));
 
         RateLimiter::for('admin-login', fn (Request $request): Limit => Limit::perMinute(5)

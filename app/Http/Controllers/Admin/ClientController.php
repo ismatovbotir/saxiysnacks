@@ -52,7 +52,7 @@ class ClientController extends Controller
 
         $changeType->handle($client, ClientType::from($validated['type']));
 
-        return back()->with('status', "{$client->fullName()} now gets {$client->type->label()} prices.");
+        return back()->with('status', __(':name now gets :type prices.', ['name' => $client->fullName(), 'type' => $client->type->label()]));
     }
 
     public function updateStatus(Request $request, TelegramClient $client, ChangeClientStatus $changeStatus): RedirectResponse
@@ -61,6 +61,6 @@ class ClientController extends Controller
 
         $changeStatus->handle($client, ClientStatus::from($validated['status']));
 
-        return back()->with('status', "{$client->fullName()} is now {$client->status->label()}.");
+        return back()->with('status', __(':name is now :status.', ['name' => $client->fullName(), 'status' => $client->status->label()]));
     }
 }

@@ -40,7 +40,7 @@ class SettingsRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'telegram_contact.regex' => 'Enter a Telegram username like saxiy_sales (5–32 letters, digits or underscores).',
+            'telegram_contact.regex' => __('Enter a Telegram username like saxiy_sales (5–32 letters, digits or underscores).'),
         ];
     }
 

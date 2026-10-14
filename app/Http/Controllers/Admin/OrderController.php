@@ -39,6 +39,6 @@ class OrderController extends Controller
 
         $changeStatus->handle($order, OrderStatus::from($validated['status']));
 
-        return back()->with('status', "Order {$order->number()} is now {$order->status->label()}.");
+        return back()->with('status', __('Order :number is now :status.', ['number' => $order->number(), 'status' => $order->status->label()]));
     }
 }

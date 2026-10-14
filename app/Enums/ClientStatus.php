@@ -9,10 +9,10 @@ enum ClientStatus: string
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::Active => 'Active',
             self::Blocked => 'Blocked',
-        };
+        });
     }
 
     public function emoji(): string

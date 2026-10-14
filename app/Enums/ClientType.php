@@ -12,10 +12,10 @@ enum ClientType: string
 
     public function label(): string
     {
-        return match ($this) {
+        return __(match ($this) {
             self::Consumer => 'Consumer',
             self::Reseller => 'Reseller',
-        };
+        });
     }
 
     public function emoji(): string

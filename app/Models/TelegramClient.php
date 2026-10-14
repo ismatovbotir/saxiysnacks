@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
@@ -61,6 +62,27 @@ class TelegramClient extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    /**
+     * The customer's "My list": products they order regularly, with their usual number of boxes.
+     *
+     * @return BelongsToMany<Product, $this>
+     */
+    public function savedProducts(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'saved_products')->withPivot('quantity')->withTimestamps();
+    }
+
+    /**
+     * @return array<int, int> usual number of boxes keyed by product id
+     */
+    public function savedQuantities(): array
+    {
+        return $this->savedProducts()
+            ->pluck('saved_products.quantity', 'products.id')
+            ->map(fn (mixed $quantity): int => (int) $quantity)
+            ->all();
     }
 
     public function isActive(): bool

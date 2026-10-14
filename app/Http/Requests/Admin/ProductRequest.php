@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin;
 
 use App\Enums\ProductIllustration;
 use App\Models\Product;
+use App\Rules\Gtin;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,6 +21,9 @@ class ProductRequest extends FormRequest
         return [
             'category_id' => ['required', 'integer', 'exists:categories,id'],
             'sku' => ['nullable', 'string', 'max:64', Rule::unique(Product::class)->ignore($product)],
+            'gtin' => ['nullable', 'string', new Gtin, Rule::unique(Product::class)->ignore($product)],
+            'class_code' => ['nullable', 'string', 'regex:/^\d{17}$/'],
+            'package_code' => ['nullable', 'string', 'regex:/^\d{1,20}$/'],
             'name' => ['required', 'array:uz,ru,en'],
             'name.uz' => ['required', 'string', 'max:255'],
             'name.ru' => ['required', 'string', 'max:255'],
@@ -41,6 +45,28 @@ class ProductRequest extends FormRequest
     }
 
     /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'gtin.unique' => __('Another product already uses this GTIN.'),
+            'class_code.regex' => __('The class code (MXIK / ИКПУ) must be exactly 17 digits.'),
+            'package_code.regex' => __('The package code must contain digits only.'),
+        ];
+    }
+
+    /**
+     * Codes are often pasted with spaces or dashes; keep digits only.
+     */
+    private function code(string $key): ?string
+    {
+        $digits = preg_replace('/[\s\-.]/', '', (string) $this->input($key));
+
+        return $digits === '' ? null : $digits;
+    }
+
+    /**
      * Accepts amounts typed with spaces or separators, e.g. "185 000".
      */
     private function money(string $key): ?int
@@ -51,6 +77,9 @@ class ProductRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
+            'gtin' => $this->code('gtin'),
+            'class_code' => $this->code('class_code'),
+            'package_code' => $this->code('package_code'),
             'consumer_price' => $this->money('consumer_price'),
             'reseller_price' => $this->money('reseller_price'),
             'sort_order' => $this->input('sort_order', 0) ?? 0,

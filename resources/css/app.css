@@ -16,7 +16,7 @@
 
 @layer components {
     .admin-input {
-        @apply w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm shadow-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/30;
+        @apply w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-base shadow-xs sm:text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/30;
     }
 
     .admin-btn {
@@ -29,5 +29,22 @@
 
     .admin-card {
         @apply rounded-xl border border-black/10 bg-white;
+    }
+
+    /* Filters stay reachable under the top bar while scrolling long lists. */
+    .admin-filterbar {
+        @apply sticky top-14 z-10 -mx-4 mb-4 flex flex-wrap items-center gap-2 border-b border-black/5 bg-paper/95 px-4 py-2 lg:-mx-8 lg:px-8;
+    }
+
+    .admin-chips {
+        @apply -mx-4 flex w-[calc(100%+2rem)] gap-1.5 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:w-auto sm:px-0;
+    }
+
+    .admin-chip {
+        @apply inline-flex shrink-0 items-center gap-1.5 rounded-full border border-black/10 bg-white px-3 py-1.5 text-sm font-medium whitespace-nowrap hover:border-black/30 aria-[current=page]:border-ink aria-[current=page]:bg-ink aria-[current=page]:text-white;
+    }
+
+    .admin-th {
+        @apply px-4 py-3 text-xs font-semibold tracking-wide text-black/50 uppercase;
     }
 }

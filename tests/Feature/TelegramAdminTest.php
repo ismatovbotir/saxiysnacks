@@ -8,6 +8,7 @@ use App\Models\TelegramClient;
 use App\Models\User;
 use App\Support\TelegramSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\URL;
 use Tests\Concerns\InteractsWithTelegram;
@@ -23,7 +24,7 @@ class TelegramAdminTest extends TestCase
     {
         parent::setUp();
 
-        $this->actingAs(User::factory()->create());
+        $this->actingAs(User::factory()->create(['locale' => 'en']));
     }
 
     private function fakeTelegram(): void
@@ -144,5 +145,23 @@ class TelegramAdminTest extends TestCase
         $this->post(route('admin.telegram.test'))->assertSessionHas('status', 'Test message sent to the admin chat.');
 
         $this->assertTelegramCalled('sendMessage', fn (array $data): bool => $data['chat_id'] === '-1001234567890');
+    }
+
+    public function test_the_telegram_page_warns_when_queued_messages_are_not_being_sent(): void
+    {
+        $this->fakeTelegram();
+        config(['queue.default' => 'database']);
+
+        $this->get(route('admin.telegram.edit'))->assertOk()->assertSee('No backlog')->assertDontSee('Worker not running');
+
+        DB::table('jobs')->insert([
+            'queue' => 'default',
+            'payload' => '{}',
+            'attempts' => 0,
+            'available_at' => now()->subMinutes(10)->getTimestamp(),
+            'created_at' => now()->subMinutes(10)->getTimestamp(),
+        ]);
+
+        $this->get(route('admin.telegram.edit'))->assertOk()->assertSee('Worker not running')->assertSee('php artisan queue:work');
     }
 }

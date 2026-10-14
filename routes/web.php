@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\LocaleController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\SettingsController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\Storefront\CatalogController;
 use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\ProductPageController;
 use App\Http\Controllers\Storefront\SeoController;
+use App\Http\Middleware\SetAdminLocale;
 use App\Http\Middleware\SetStorefrontLocale;
 use Illuminate\Support\Facades\Route;
 
@@ -22,7 +24,9 @@ Route::get('llms.txt', [SeoController::class, 'llms'])->name('llms');
 
 Route::view('/webapp', 'webapp')->name('webapp');
 
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(SetAdminLocale::class)->group(function () {
+    Route::put('locale', LocaleController::class)->name('locale');
+
     Route::middleware('guest')->group(function () {
         Route::get('login', [AuthController::class, 'create'])->name('login');
         Route::post('login', [AuthController::class, 'store'])->middleware('throttle:admin-login')->name('login.store');
