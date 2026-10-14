@@ -9,7 +9,7 @@ const T = {
     uz: {
         catalog: 'Katalog', cart: 'Savat', orders: 'Buyurtmalar', profile: 'Profil', all: 'Hammasi', g: 'g', pcs: 'dona',
         openInTelegram: 'Iltimos, ilovani SAXIY Telegram botidan oching.',
-        guestH: 'Narxlarni ko\'rish uchun ro\'yxatdan o\'ting', guestP: 'Bir daqiqa: ism, telefon va manzil — shundan so\'ng narxlar va buyurtma ochiladi.', register: 'Ro\'yxatdan o\'tish', editProfile: 'Ma\'lumotlarni o\'zgartirish',
+        guestH: 'Narxlarni ko\'rish uchun ro\'yxatdan o\'ting', guestP: 'Bir daqiqa: ism va telefon — shundan so\'ng narxlar va buyurtma ochiladi.', register: 'Ro\'yxatdan o\'tish', editProfile: 'Ma\'lumotlarni o\'zgartirish',
         blockedH: 'Hisobingiz bloklangan', blockedP: 'Batafsil ma\'lumot uchun biz bilan bog\'laning. Katalogni ko\'rishingiz mumkin.',
         resellerBadge: '⭐ Diler narxlari', optional: 'ixtiyoriy',
         firstName: 'Ism', lastName: 'Familiya', phone: 'Telefon raqam', company: 'Kompaniya nomi', vat: 'STIR (INN)', submit: 'Yuborish', back: 'Orqaga',
@@ -27,7 +27,7 @@ const T = {
     ru: {
         catalog: 'Каталог', cart: 'Корзина', orders: 'Заказы', profile: 'Профиль', all: 'Все', g: 'г', pcs: 'шт.',
         openInTelegram: 'Откройте приложение из Telegram-бота SAXIY.',
-        guestH: 'Зарегистрируйтесь, чтобы видеть цены', guestP: 'Это минута: имя, телефон и локация — и сразу откроются цены и заказ.', register: 'Зарегистрироваться', editProfile: 'Изменить данные',
+        guestH: 'Зарегистрируйтесь, чтобы видеть цены', guestP: 'Это минута: имя и телефон — и сразу откроются цены и заказ.', register: 'Зарегистрироваться', editProfile: 'Изменить данные',
         blockedH: 'Аккаунт заблокирован', blockedP: 'Свяжитесь с нами для подробностей. Каталог по-прежнему доступен.',
         resellerBadge: '⭐ Цены для реселлеров', optional: 'необязательно',
         firstName: 'Имя', lastName: 'Фамилия', phone: 'Номер телефона', company: 'Название компании', vat: 'ИНН', submit: 'Отправить', back: 'Назад',
@@ -45,7 +45,7 @@ const T = {
     en: {
         catalog: 'Catalog', cart: 'Cart', orders: 'Orders', profile: 'Profile', all: 'All', g: 'g', pcs: 'pcs',
         openInTelegram: 'Please open this app from the SAXIY Telegram bot.',
-        guestH: 'Register to see prices', guestP: 'It takes a minute: your name, phone and location — then prices and ordering unlock right away.', register: 'Register', editProfile: 'Edit details',
+        guestH: 'Register to see prices', guestP: 'It takes a minute: your name and phone — then prices and ordering unlock right away.', register: 'Register', editProfile: 'Edit details',
         blockedH: 'Your account is blocked', blockedP: 'Please contact us for details. You can still browse the catalog.',
         resellerBadge: '⭐ Reseller prices', optional: 'optional',
         firstName: 'First name', lastName: 'Last name', phone: 'Phone number', company: 'Company name', vat: 'VAT / TIN', submit: 'Submit', back: 'Back',
@@ -273,9 +273,9 @@ function viewRegister() {
         ${field('first_name', L.firstName, 'autocomplete="given-name" maxlength="100"')}
         ${field('last_name', L.lastName, 'autocomplete="family-name" maxlength="100"')}
         ${field('phone', L.phone, 'type="tel" inputmode="tel" autocomplete="tel" placeholder="+998 90 123 45 67"')}
-        <fieldset class="grid gap-2"><legend class="mb-1 text-sm font-semibold">${esc(L.location)}</legend>${locationPicker({ allowSaved: Boolean(state.profile?.client) })}</fieldset>
         ${field('company_name', L.company, 'autocomplete="organization" maxlength="255"', false)}
         ${field('vat_number', L.vat, 'inputmode="numeric" maxlength="32"', false)}
+        ${state.profile?.client ? `<fieldset class="grid gap-2"><legend class="mb-1 text-sm font-semibold">${esc(L.location)} <span class="${ui.hint}">(${esc(L.optional)})</span></legend>${locationPicker({ allowSaved: true })}</fieldset>` : ''}
         ${state.errors.form ? `<p class="${ui.error}">${esc(state.errors.form)}</p>` : ''}
         <button class="${ui.btn}" type="submit">${esc(L.submit)}</button>
         <button class="${ui.btnGhost}" type="button" data-go="back">${esc(L.back)}</button></form>`;
@@ -333,7 +333,7 @@ function resetLocationForm() {
 async function submitRegistration(form) {
     state.errors = {};
     const location = pickedCoordinates();
-    const data = { ...Object.fromEntries(new FormData(form).entries()), address: state.address || null, latitude: location?.latitude ?? null, longitude: location?.longitude ?? null };
+    const data = { ...Object.fromEntries(new FormData(form).entries()), ...(location ? { latitude: location.latitude, longitude: location.longitude, address: state.address || null } : {}) };
     try {
         const wasRegistered = Boolean(state.profile?.client);
         state.profile = await api('profile', { method: 'POST', body: JSON.stringify(data) });

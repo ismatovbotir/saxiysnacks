@@ -32,7 +32,7 @@
     "name": "pack"
   },
   "resources/css/app.css": {
-    "file": "assets/app-Cd7eM-Jh.css",
+    "file": "assets/app-UxJTQGpS.css",
     "name": "app",
     "names": [
       "app.css"
@@ -74,7 +74,7 @@
     ]
   },
   "resources/js/webapp.js": {
-    "file": "assets/webapp-CfivsAVk.js",
+    "file": "assets/webapp-BkTO24BW.js",
     "name": "webapp",
     "src": "resources/js/webapp.js",
     "isEntry": true,

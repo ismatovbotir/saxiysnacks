@@ -33,9 +33,6 @@ class WebAppApiTest extends TestCase
             'first_name' => 'Aziz',
             'last_name' => 'Karimov',
             'phone' => '+998 90 123 45 67',
-            'latitude' => 41.311081,
-            'longitude' => 69.240562,
-            'address' => 'Chilonzor 9, house 12',
             ...$overrides,
         ];
     }
@@ -124,13 +121,10 @@ class WebAppApiTest extends TestCase
         $this->assertSame(ClientType::Consumer, $client->type);
         $this->assertSame(ClientStatus::Active, $client->status);
         $this->assertSame(777, $client->admin_message_id);
-        $this->assertSame(41.311081, $client->latitude);
-        $this->assertSame(69.240562, $client->longitude);
-        $this->assertSame('Chilonzor 9, house 12', $client->address);
+        $this->assertFalse($client->hasLocation());
 
         $this->assertTelegramCalled('sendMessage', fn (array $data): bool => $data['chat_id'] === self::ADMIN_CHAT_ID
             && str_contains($data['text'], 'Aziz Karimov')
-            && str_contains($data['text'], 'Chilonzor 9, house 12')
             && $data['reply_markup']['inline_keyboard'][0][0]['callback_data'] === "client:reseller:{$client->uuid}");
         $this->assertTelegramCalled('sendMessage', fn (array $data): bool => $data['chat_id'] === 1001
             && str_contains($data['text'], "ro'yxatdan o'tdingiz"));
@@ -147,14 +141,27 @@ class WebAppApiTest extends TestCase
             ->assertJsonPath('client.vat_number', '305123456');
     }
 
-    public function test_registration_requires_name_surname_phone_and_location(): void
+    public function test_registration_requires_only_name_surname_and_phone(): void
     {
         $this->postJson(route('webapp.profile.store'), [], $this->webAppHeaders(1001))
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['first_name', 'last_name', 'phone', 'latitude' => 'Please share your location.', 'longitude'])
-            ->assertJsonMissingValidationErrors(['company_name', 'vat_number']);
+            ->assertJsonValidationErrors(['first_name', 'last_name', 'phone'])
+            ->assertJsonMissingValidationErrors(['company_name', 'vat_number', 'latitude', 'longitude']);
 
         $this->assertDatabaseEmpty('telegram_clients');
+    }
+
+    public function test_a_location_sent_from_edit_profile_replaces_the_saved_one(): void
+    {
+        $client = TelegramClient::factory()->create(['telegram_id' => 1001, 'latitude' => 40.0, 'longitude' => 70.0, 'address' => 'Old address']);
+
+        $this->postJson(route('webapp.profile.store'), $this->registration(), $this->webAppHeaders(1001))->assertCreated();
+        $this->assertSame([40.0, 70.0, 'Old address'], [$client->refresh()->latitude, $client->longitude, $client->address]);
+
+        $this->postJson(route('webapp.profile.store'), $this->registration(['latitude' => 41.311081, 'longitude' => 69.240562, 'address' => 'Chilonzor 9, house 12']), $this->webAppHeaders(1001))
+            ->assertCreated()
+            ->assertJsonPath('client.address', 'Chilonzor 9, house 12');
+        $this->assertSame([41.311081, 69.240562], [$client->refresh()->latitude, $client->longitude]);
     }
 
     public function test_registration_rejects_impossible_coordinates(): void

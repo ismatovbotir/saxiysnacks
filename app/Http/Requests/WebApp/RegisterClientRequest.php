@@ -24,20 +24,9 @@ class RegisterClientRequest extends FormRequest
             'phone' => ['required', 'string', 'regex:/^\+?[0-9\s\-()]{9,20}$/'],
             'company_name' => ['nullable', 'string', 'max:255'],
             'vat_number' => ['nullable', 'string', 'regex:/^[0-9A-Za-z\-]{5,32}$/'],
-            'latitude' => ['required', 'numeric', 'between:-90,90'],
-            'longitude' => ['required', 'numeric', 'between:-180,180'],
+            'latitude' => ['nullable', 'required_with:longitude', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'required_with:latitude', 'numeric', 'between:-180,180'],
             'address' => ['nullable', 'string', 'max:500'],
-        ];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    public function messages(): array
-    {
-        return [
-            'latitude.required' => 'Please share your location.',
-            'longitude.required' => 'Please share your location.',
         ];
     }
 
